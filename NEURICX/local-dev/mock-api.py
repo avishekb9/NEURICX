@@ -199,6 +199,164 @@ def train_ml_ensemble():
         }
     })
 
+@app.route('/sisir/analyze', methods=['POST'])
+def sisir_analyze():
+    data = request.json
+    sisir_id = f"sisir_{int(time.time())}_{random.randint(1000, 9999)}"
+    
+    platforms = data.get('platforms', ['instagram'])
+    accounts = data.get('accounts', {})
+    analysis_type = data.get('analysis_type', 'comprehensive')
+    
+    # Generate realistic SISIR analysis results
+    profile_data = {
+        'follower_count': random.randint(5000, 50000),
+        'following_count': random.randint(500, 5000),
+        'post_count': random.randint(100, 2000),
+        'verified': random.choice([True, False]),
+        'engagement_rate': random.uniform(2.5, 8.5)
+    }
+    
+    economic_impact = {
+        'overall_score': random.uniform(65, 95),
+        'market_influence': random.uniform(60, 90),
+        'consumer_sentiment_impact': random.uniform(70, 95),
+        'brand_value_correlation': random.uniform(65, 85),
+        'viral_potential': random.uniform(55, 90),
+        'economic_keyword_density': random.uniform(40, 80)
+    }
+    
+    viral_predictions = {
+        'top_viral_hashtags': {
+            '#finance': 15,
+            '#investing': 12,
+            '#crypto': 8,
+            '#stocks': 7,
+            '#economy': 5
+        },
+        'optimal_content_length': random.randint(80, 280),
+        'optimal_posting_hour': random.randint(9, 21),
+        'engagement_threshold': random.uniform(3.0, 7.0)
+    }
+    
+    growth_strategies = {
+        'content_optimization': {
+            'recommended_posting_frequency': '1-2 posts per day',
+            'best_content_types': ['market analysis', 'educational posts', 'behind-the-scenes'],
+            'hashtag_strategy': 'Mix of 8-12 hashtags: trending + niche + branded'
+        },
+        'audience_growth': {
+            'target_demographics': ['25-45 professionals', 'finance enthusiasts', 'entrepreneurs'],
+            'collaboration_opportunities': ['fintech influencers', 'market analysts', 'startup founders']
+        },
+        'economic_positioning': {
+            'market_alignment': 'Focus on data-driven insights',
+            'trending_topics': ['AI in finance', 'sustainable investing', 'DeFi trends']
+        }
+    }
+    
+    market_correlations = {
+        'sp500_correlation': random.uniform(0.3, 0.8),
+        'crypto_correlation': random.uniform(0.2, 0.7),
+        'vix_correlation': random.uniform(-0.6, -0.2),
+        'consumer_confidence_correlation': random.uniform(0.4, 0.9)
+    }
+    
+    return jsonify({
+        "sisir_id": sisir_id,
+        "analysis_type": analysis_type,
+        "platforms": platforms,
+        "status": "completed",
+        "profile_data": profile_data,
+        "economic_impact": economic_impact,
+        "viral_predictions": viral_predictions,
+        "growth_strategies": growth_strategies,
+        "market_correlations": market_correlations,
+        "sentiment_analysis": {
+            "average_sentiment": random.uniform(-0.2, 0.8),
+            "sentiment_trend": random.choice(['improving', 'stable', 'declining']),
+            "economic_sentiment": random.uniform(0.3, 0.9),
+            "confidence_score": random.uniform(0.7, 0.95)
+        },
+        "recommendations": [
+            "Increase focus on educational content about market trends",
+            "Optimize posting times based on audience engagement patterns",
+            "Collaborate with fintech influencers to expand reach",
+            "Leverage trending economic topics for viral potential",
+            "Build community through interactive Q&A sessions"
+        ],
+        "economic_forecast": {
+            "sentiment_forecast": random.choice([
+                "Improving market sentiment - potential upward trend",
+                "Stable market sentiment - sideways movement expected",
+                "Mixed signals - monitor for trend confirmation"
+            ]),
+            "confidence_level": random.uniform(75, 95),
+            "key_indicators": {
+                "social_sentiment_score": random.uniform(0.2, 0.8),
+                "sentiment_momentum": random.uniform(-0.05, 0.05),
+                "market_correlation_strength": random.uniform(0.4, 0.8)
+            }
+        }
+    })
+
+@app.route('/sisir/sentiment', methods=['POST'])
+def sisir_sentiment_stream():
+    data = request.json
+    stream_id = f"sentiment_stream_{int(time.time())}_{random.randint(1000, 9999)}"
+    
+    return jsonify({
+        "stream_id": stream_id,
+        "status": "started",
+        "message": "Real-time sentiment monitoring initiated",
+        "platforms": data.get('platforms', ['instagram', 'twitter']),
+        "update_frequency": data.get('update_frequency', 300),  # seconds
+        "current_sentiment": {
+            "overall_score": random.uniform(-0.3, 0.7),
+            "market_correlation": random.uniform(0.3, 0.8),
+            "trending_topics": ['AI investment', 'crypto adoption', 'sustainable finance'],
+            "sentiment_by_platform": {
+                "instagram": random.uniform(0.1, 0.8),
+                "twitter": random.uniform(-0.2, 0.6),
+                "facebook": random.uniform(0.0, 0.5)
+            }
+        }
+    })
+
+@app.route('/sisir/viral-prediction', methods=['POST'])
+def sisir_viral_prediction():
+    data = request.json
+    content = data.get('content', '')
+    
+    # Mock viral prediction based on content analysis
+    score = random.uniform(0.2, 0.95)
+    
+    factors = {
+        'content_quality': random.uniform(0.6, 0.9),
+        'timing_optimization': random.uniform(0.5, 0.8),
+        'hashtag_effectiveness': random.uniform(0.4, 0.9),
+        'audience_alignment': random.uniform(0.7, 0.95),
+        'trend_relevance': random.uniform(0.3, 0.8)
+    }
+    
+    return jsonify({
+        "viral_probability": score,
+        "prediction_confidence": random.uniform(0.75, 0.95),
+        "factors": factors,
+        "recommendations": [
+            "Add trending hashtags #fintech #investing",
+            "Post during peak hours (2-4 PM)",
+            "Include a call-to-action question",
+            "Use engaging visuals or charts",
+            "Tag relevant industry influencers"
+        ],
+        "estimated_reach": {
+            "base_reach": random.randint(1000, 5000),
+            "viral_multiplier": round(score * 10, 1),
+            "potential_reach": random.randint(10000, 100000)
+        }
+    })
+
 if __name__ == '__main__':
     print("🔌 Starting NEURICX Mock API Server...")
     print("📡 API available at http://localhost:8000")

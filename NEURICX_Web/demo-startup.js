@@ -373,6 +373,107 @@ class NEURICXDemo {
         }
     }
 
+    // Demo SISIR Social Intelligence Analysis
+    async analyzeSISIR(config) {
+        console.log('📱 Running demo SISIR social intelligence analysis...', config);
+        
+        const sisirId = this.generateId('demo_sisir');
+        this.activeJobs.set(sisirId, {
+            type: 'sisir',
+            status: 'running',
+            progress: 0,
+            config: config,
+            startTime: Date.now()
+        });
+
+        try {
+            const steps = [
+                { progress: 10, message: 'Connecting to social media APIs...' },
+                { progress: 25, message: 'Extracting profile data and engagement metrics...' },
+                { progress: 40, message: 'Analyzing content sentiment and emotional patterns...' },
+                { progress: 55, message: 'Correlating social signals with economic indicators...' },
+                { progress: 70, message: 'Running viral content prediction models...' },
+                { progress: 85, message: 'Generating growth optimization strategies...' },
+                { progress: 100, message: 'SISIR analysis completed!' }
+            ];
+
+            for (const step of steps) {
+                this.updateJobStatus(sisirId, 'running', step.progress, step.message);
+                await this.delay(1200 + Math.random() * 800);
+            }
+
+            this.updateJobStatus(sisirId, 'completed', 100, 'Demo SISIR analysis completed');
+
+            const results = {
+                sisirId,
+                status: 'completed',
+                platforms: config.platforms || ['instagram', 'twitter'],
+                profile_data: {
+                    follower_count: Math.floor(Math.random() * 45000) + 5000,
+                    following_count: Math.floor(Math.random() * 4500) + 500,
+                    post_count: Math.floor(Math.random() * 1900) + 100,
+                    verified: Math.random() > 0.8,
+                    engagement_rate: 2.5 + Math.random() * 6
+                },
+                economic_impact: {
+                    overall_score: 65 + Math.random() * 30,
+                    market_influence: 60 + Math.random() * 30,
+                    consumer_sentiment_impact: 70 + Math.random() * 25,
+                    brand_value_correlation: 65 + Math.random() * 20,
+                    viral_potential: 55 + Math.random() * 35,
+                    economic_keyword_density: 40 + Math.random() * 40
+                },
+                sentiment_analysis: {
+                    average_sentiment: -0.2 + Math.random() * 1.0,
+                    sentiment_trend: ['improving', 'stable', 'declining'][Math.floor(Math.random() * 3)],
+                    economic_sentiment: 0.3 + Math.random() * 0.6,
+                    confidence_score: 0.7 + Math.random() * 0.25
+                },
+                viral_predictions: {
+                    top_viral_hashtags: {
+                        '#finance': 15,
+                        '#investing': 12,
+                        '#crypto': 8,
+                        '#stocks': 7,
+                        '#economy': 5
+                    },
+                    optimal_content_length: Math.floor(Math.random() * 200) + 80,
+                    optimal_posting_hour: Math.floor(Math.random() * 12) + 9,
+                    engagement_threshold: 3.0 + Math.random() * 4.0
+                },
+                growth_strategies: {
+                    content_optimization: {
+                        recommended_posting_frequency: '1-2 posts per day',
+                        best_content_types: ['market analysis', 'educational posts', 'behind-the-scenes'],
+                        hashtag_strategy: 'Mix of 8-12 hashtags: trending + niche + branded'
+                    },
+                    audience_growth: {
+                        target_demographics: ['25-45 professionals', 'finance enthusiasts', 'entrepreneurs'],
+                        collaboration_opportunities: ['fintech influencers', 'market analysts', 'startup founders']
+                    }
+                },
+                recommendations: [
+                    "Increase focus on educational content about market trends",
+                    "Optimize posting times based on audience engagement patterns", 
+                    "Collaborate with fintech influencers to expand reach",
+                    "Leverage trending economic topics for viral potential",
+                    "Build community through interactive Q&A sessions"
+                ]
+            };
+
+            // Store results globally for dashboard access
+            if (typeof window !== 'undefined') {
+                window.sisirResults = results;
+            }
+
+            return results;
+
+        } catch (error) {
+            this.updateJobStatus(sisirId, 'failed', 0, error.message);
+            throw error;
+        }
+    }
+
     // Utility methods
     generateId(prefix) {
         return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

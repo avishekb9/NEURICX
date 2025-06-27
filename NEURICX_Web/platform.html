@@ -395,6 +395,31 @@
             font-weight: 600;
         }
 
+        /* SISIR Special Styling */
+        .capability-card.sisir {
+            border: 2px solid #e91e63;
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.1), rgba(156, 39, 176, 0.1));
+        }
+
+        .capability-card.sisir:hover {
+            border-color: #e91e63;
+            box-shadow: 0 20px 40px rgba(233, 30, 99, 0.3);
+            transform: translateY(-10px);
+        }
+
+        .capability-card.sisir .capability-header h3 {
+            color: #e91e63;
+        }
+
+        .capability-card.sisir .btn-primary {
+            background: linear-gradient(45deg, #e91e63, #9c27b0);
+        }
+
+        .capability-card.sisir .btn-primary:hover {
+            background: linear-gradient(45deg, #9c27b0, #e91e63);
+            box-shadow: 0 10px 20px rgba(233, 30, 99, 0.4);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .capabilities-grid {
@@ -702,6 +727,34 @@
                         </button>
                         <button class="btn btn-secondary" onclick="showLogsModal()">
                             <i class="fas fa-file-alt"></i> View Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SISIR Social Intelligence -->
+            <div class="capability-card sisir">
+                <div class="capability-header">
+                    <h3><i class="fas fa-users-cog"></i> SISIR Social Intelligence</h3>
+                    <p>Social Intelligence for Smart Intelligence Retrieval</p>
+                </div>
+                <div class="capability-content">
+                    <div class="capability-description">
+                        Analyze social network profiles, extract market sentiment, predict viral content, and optimize social engagement using NEURICX's economic modeling.
+                    </div>
+                    <ul class="capability-features">
+                        <li>Multi-platform social analysis (Instagram, X, Facebook)</li>
+                        <li>Real-time sentiment extraction & economic correlation</li>
+                        <li>Viral content prediction with agent-based modeling</li>
+                        <li>Economic impact scoring of social media activities</li>
+                        <li>AI-powered growth optimization strategies</li>
+                    </ul>
+                    <div class="capability-actions">
+                        <button class="btn btn-primary" onclick="showSISIRModal()">
+                            <i class="fas fa-chart-network"></i> Launch SISIR
+                        </button>
+                        <button class="btn btn-secondary" onclick="openDashboard('sisir')">
+                            <i class="fas fa-analytics"></i> Social Analytics
                         </button>
                     </div>
                 </div>
@@ -1171,6 +1224,265 @@
             const bar = document.getElementById(barId);
             bar.style.width = percentage + '%';
             bar.textContent = percentage + '%';
+        }
+
+        // SISIR Social Intelligence Functions
+        function showSISIRModal() {
+            const modal = createModal('sisirModal', 'SISIR Social Intelligence Analysis', `
+                <form id="sisirForm">
+                    <div class="form-group">
+                        <label class="form-label">Social Media Platforms</label>
+                        <div class="platform-checkboxes">
+                            <label class="platform-option">
+                                <input type="checkbox" id="instagram" checked> 
+                                <i class="fab fa-instagram"></i> Instagram
+                            </label>
+                            <label class="platform-option">
+                                <input type="checkbox" id="twitter" checked> 
+                                <i class="fab fa-twitter"></i> X (Twitter)
+                            </label>
+                            <label class="platform-option">
+                                <input type="checkbox" id="facebook"> 
+                                <i class="fab fa-facebook"></i> Facebook
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Instagram Username/ID</label>
+                            <input type="text" class="form-control" id="instagramId" placeholder="@username or user_id">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">X (Twitter) Handle</label>
+                            <input type="text" class="form-control" id="twitterId" placeholder="@handle">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Facebook Page/Profile</label>
+                        <input type="text" class="form-control" id="facebookId" placeholder="username or page_id">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Analysis Type</label>
+                            <select class="form-control" id="analysisType">
+                                <option value="growth">Growth Optimization</option>
+                                <option value="sentiment">Market Sentiment Analysis</option>
+                                <option value="viral">Viral Content Prediction</option>
+                                <option value="economic">Economic Impact Scoring</option>
+                                <option value="comprehensive">Comprehensive Analysis</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Time Range</label>
+                            <select class="form-control" id="timeRange">
+                                <option value="7">Last 7 days</option>
+                                <option value="30" selected>Last 30 days</option>
+                                <option value="90">Last 90 days</option>
+                                <option value="365">Last year</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Economic Correlation Focus</label>
+                        <div class="correlation-options">
+                            <label><input type="checkbox" checked> Stock Market Correlation</label>
+                            <label><input type="checkbox" checked> Consumer Sentiment</label>
+                            <label><input type="checkbox"> Crypto Market Correlation</label>
+                            <label><input type="checkbox"> Economic Indicators</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Advanced Options</label>
+                        <div class="advanced-options">
+                            <label><input type="checkbox" id="realTimeMonitoring"> Enable Real-time Monitoring</label>
+                            <label><input type="checkbox" id="viralPrediction" checked> Viral Content Prediction</label>
+                            <label><input type="checkbox" id="competitorAnalysis"> Competitor Analysis</label>
+                            <label><input type="checkbox" id="influencerMapping"> Influencer Network Mapping</label>
+                        </div>
+                    </div>
+                    
+                    <div class="status-message" id="sisirStatus"></div>
+                    <div class="progress-container" id="sisirProgress" style="display: none;">
+                        <div class="progress-bar" id="sisirProgressBar">0%</div>
+                    </div>
+                    
+                    <div class="capability-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-chart-network"></i> Launch SISIR Analysis
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('sisirModal')">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            `);
+
+            // Add special styling for SISIR modal
+            const modalContent = modal.querySelector('.modal-content');
+            modalContent.style.maxWidth = '800px';
+            modalContent.style.background = 'linear-gradient(135deg, rgba(233, 30, 99, 0.1), rgba(156, 39, 176, 0.1))';
+            modalContent.style.border = '2px solid #e91e63';
+
+            // Add platform checkboxes styling
+            const style = document.createElement('style');
+            style.textContent = `
+                .platform-checkboxes {
+                    display: flex;
+                    gap: 20px;
+                    margin-top: 10px;
+                }
+                .platform-option {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 10px 15px;
+                    background: rgba(233, 30, 99, 0.1);
+                    border-radius: 10px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+                .platform-option:hover {
+                    background: rgba(233, 30, 99, 0.2);
+                }
+                .platform-option i {
+                    font-size: 1.2rem;
+                }
+                .correlation-options, .advanced-options {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 10px;
+                    margin-top: 10px;
+                }
+                .correlation-options label, .advanced-options label {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 8px;
+                    background: rgba(0, 212, 255, 0.1);
+                    border-radius: 8px;
+                    cursor: pointer;
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Handle form submission
+            modal.querySelector('#sisirForm').addEventListener('submit', handleSISIRAnalysis);
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
+        }
+
+        async function handleSISIRAnalysis(e) {
+            e.preventDefault();
+            
+            const platforms = [];
+            if (document.getElementById('instagram').checked) platforms.push('instagram');
+            if (document.getElementById('twitter').checked) platforms.push('twitter');
+            if (document.getElementById('facebook').checked) platforms.push('facebook');
+            
+            const formData = {
+                platforms: platforms,
+                accounts: {
+                    instagram: document.getElementById('instagramId').value,
+                    twitter: document.getElementById('twitterId').value,
+                    facebook: document.getElementById('facebookId').value
+                },
+                analysis_type: document.getElementById('analysisType').value,
+                time_range: parseInt(document.getElementById('timeRange').value),
+                real_time_monitoring: document.getElementById('realTimeMonitoring').checked,
+                viral_prediction: document.getElementById('viralPrediction').checked,
+                competitor_analysis: document.getElementById('competitorAnalysis').checked,
+                influencer_mapping: document.getElementById('influencerMapping').checked
+            };
+            
+            if (platforms.length === 0) {
+                showStatus('sisirStatus', 'Please select at least one platform', 'error');
+                return;
+            }
+            
+            showStatus('sisirStatus', 'Initializing SISIR analysis...', 'warning');
+            showProgress('sisirProgress', 'sisirProgressBar');
+            
+            try {
+                // Real SISIR API call with progress simulation
+                const steps = [
+                    { progress: 10, message: 'Connecting to social media APIs...' },
+                    { progress: 25, message: 'Extracting profile data and engagement metrics...' },
+                    { progress: 40, message: 'Analyzing content sentiment and emotional patterns...' },
+                    { progress: 55, message: 'Correlating social signals with economic indicators...' },
+                    { progress: 70, message: 'Running viral content prediction models...' },
+                    { progress: 85, message: 'Generating growth optimization strategies...' },
+                    { progress: 95, message: 'Compiling comprehensive analysis report...' }
+                ];
+
+                // Simulate progress
+                for (const step of steps) {
+                    updateProgress('sisirProgressBar', step.progress);
+                    showStatus('sisirStatus', step.message, 'warning');
+                    await new Promise(resolve => setTimeout(resolve, 1200));
+                }
+
+                // Make actual API call
+                updateProgress('sisirProgressBar', 100);
+                showStatus('sisirStatus', 'Finalizing SISIR analysis...', 'warning');
+                
+                const response = await fetch(`${API_BASE}/sisir/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`SISIR API failed: ${response.status} ${response.statusText}`);
+                }
+
+                const sisirResults = await response.json();
+                
+                showStatus('sisirStatus', 'SISIR analysis completed successfully! Opening dashboard...', 'success');
+                
+                // Store results for dashboard
+                window.sisirResults = sisirResults;
+                
+                // Update system stats
+                systemStats.totalAgents += 100; // Simulated social agents
+                updateStats();
+                
+                setTimeout(() => {
+                    closeModal('sisirModal');
+                    openDashboard('sisir');
+                }, 2000);
+                
+            } catch (error) {
+                showStatus('sisirStatus', 'SISIR analysis failed: ' + error.message, 'error');
+            }
+        }
+
+        function createModal(id, title, content) {
+            // Remove existing modal if it exists
+            const existingModal = document.getElementById(id);
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            const modal = document.createElement('div');
+            modal.id = id;
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">${title}</h2>
+                        <span class="close" onclick="closeModal('${id}')">&times;</span>
+                    </div>
+                    ${content}
+                </div>
+            `;
+            return modal;
         }
 
         // Close modals when clicking outside
