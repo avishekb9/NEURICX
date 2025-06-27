@@ -395,6 +395,138 @@
             font-weight: 600;
         }
 
+        /* Platform Modal Styling */
+        .sector-options, .indicator-options, .model-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .sector-options label, .indicator-options label, .model-options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .status-dashboard {
+            padding: 20px 0;
+        }
+        
+        .status-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .status-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .health-metrics, .perf-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .health-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: var(--background-light);
+            border-radius: 6px;
+        }
+        
+        .health-value.online { color: var(--success-color); }
+        .health-value.offline { color: var(--danger-color); }
+        .health-value.warning { color: var(--warning-color); }
+        
+        .metric-card {
+            background: var(--background-light);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .metric-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .metric-label {
+            color: var(--text-medium);
+            font-size: 0.9rem;
+        }
+        
+        .logs-container {
+            max-height: 70vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .logs-header {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+        }
+        
+        .log-filters {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .logs-content {
+            flex: 1;
+            overflow-y: auto;
+            background: var(--background-dark);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            max-height: 400px;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        
+        .log-entry.info { background: rgba(0, 212, 255, 0.1); }
+        .log-entry.warning { background: rgba(255, 170, 0, 0.1); }
+        .log-entry.error { background: rgba(255, 71, 87, 0.1); }
+        
+        .log-time { color: var(--text-medium); margin-right: 10px; }
+        .log-level { 
+            margin-right: 10px; 
+            font-weight: bold;
+            min-width: 60px;
+            display: inline-block;
+        }
+        .log-level:before { content: '['; }
+        .log-level:after { content: ']'; }
+        
+        .status-actions, .logs-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         /* SISIR Special Styling */
         .capability-card.sisir {
             border: 2px solid #e91e63;
@@ -1046,27 +1178,362 @@
         }
 
         function showPolicyModal() {
-            alert('Policy Analysis modal will be implemented');
+            const modal = createModal('policyModal', 'Policy Analysis & Economic Impact', `
+                <form id="policyForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Policy Type</label>
+                            <select class="form-control" id="policyType">
+                                <option value="monetary">Monetary Policy</option>
+                                <option value="fiscal">Fiscal Policy</option>
+                                <option value="regulatory">Regulatory Policy</option>
+                                <option value="trade">Trade Policy</option>
+                                <option value="environmental">Environmental Policy</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Intervention Magnitude</label>
+                            <input type="range" class="form-control" id="interventionMag" min="0.1" max="2.0" step="0.1" value="0.25">
+                            <small>Current: <span id="magValue">0.25</span></small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Target Economic Sectors</label>
+                        <div class="sector-options">
+                            <label><input type="checkbox" checked> Banking & Finance</label>
+                            <label><input type="checkbox" checked> Manufacturing</label>
+                            <label><input type="checkbox"> Technology</label>
+                            <label><input type="checkbox"> Healthcare</label>
+                            <label><input type="checkbox"> Energy</label>
+                            <label><input type="checkbox"> Real Estate</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Analysis Duration (days)</label>
+                        <input type="number" class="form-control" id="analysisDuration" value="90" min="30" max="365">
+                    </div>
+                    <div class="status-message" id="policyStatus"></div>
+                    <div class="progress-container" id="policyProgress" style="display: none;">
+                        <div class="progress-bar" id="policyProgressBar">0%</div>
+                    </div>
+                    <div class="capability-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-balance-scale"></i> Run Policy Analysis
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('policyModal')">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            `);
+            
+            modal.querySelector('#policyForm').addEventListener('submit', handlePolicyAnalysis);
+            modal.querySelector('#interventionMag').addEventListener('input', function() {
+                document.getElementById('magValue').textContent = this.value;
+            });
+            
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
         }
 
         function showCrisisModal() {
-            alert('Crisis Prediction modal will be implemented');
+            const modal = createModal('crisisModal', 'Crisis Prediction & Early Warning', `
+                <form id="crisisForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Prediction Horizon (days)</label>
+                            <select class="form-control" id="predictionHorizon">
+                                <option value="30">30 days</option>
+                                <option value="60">60 days</option>
+                                <option value="90" selected>90 days</option>
+                                <option value="180">6 months</option>
+                                <option value="365">1 year</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Crisis Type Focus</label>
+                            <select class="form-control" id="crisisType">
+                                <option value="financial">Financial Crisis</option>
+                                <option value="market">Market Crash</option>
+                                <option value="currency">Currency Crisis</option>
+                                <option value="banking">Banking Crisis</option>
+                                <option value="sovereign">Sovereign Debt Crisis</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Economic Indicators to Monitor</label>
+                        <div class="indicator-options">
+                            <label><input type="checkbox" checked> Credit Growth</label>
+                            <label><input type="checkbox" checked> Asset Prices</label>
+                            <label><input type="checkbox" checked> Leverage Ratios</label>
+                            <label><input type="checkbox"> Interest Rate Spreads</label>
+                            <label><input type="checkbox"> Currency Volatility</label>
+                            <label><input type="checkbox"> Market Sentiment</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ML Models to Use</label>
+                        <div class="model-options">
+                            <label><input type="checkbox" checked> Random Forest</label>
+                            <label><input type="checkbox" checked> XGBoost</label>
+                            <label><input type="checkbox" checked> LSTM Neural Network</label>
+                            <label><input type="checkbox"> SVM</label>
+                        </div>
+                    </div>
+                    <div class="status-message" id="crisisStatus"></div>
+                    <div class="progress-container" id="crisisProgress" style="display: none;">
+                        <div class="progress-bar" id="crisisProgressBar">0%</div>
+                    </div>
+                    <div class="capability-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-exclamation-triangle"></i> Start Crisis Prediction
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('crisisModal')">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            `);
+            
+            modal.querySelector('#crisisForm').addEventListener('submit', handleCrisisAnalysis);
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
         }
 
         function showQuantumModal() {
-            alert('Quantum Computing modal will be implemented');
+            const modal = createModal('quantumModal', 'Quantum Computing Optimization', `
+                <form id="quantumForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Quantum Algorithm</label>
+                            <select class="form-control" id="quantumAlgorithm">
+                                <option value="portfolio">Portfolio Optimization</option>
+                                <option value="risk">Risk Assessment</option>
+                                <option value="pricing">Option Pricing</option>
+                                <option value="fraud">Fraud Detection</option>
+                                <option value="optimization">General Optimization</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Quantum Backend</label>
+                            <select class="form-control" id="quantumBackend">
+                                <option value="qasm_simulator">QASM Simulator</option>
+                                <option value="statevector_simulator">Statevector Simulator</option>
+                                <option value="ibmq_qasm_simulator">IBMQ QASM Simulator</option>
+                                <option value="ibmq_armonk">IBMQ Armonk (Real Hardware)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Number of Qubits</label>
+                            <input type="number" class="form-control" id="numQubits" value="4" min="2" max="20">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Circuit Depth</label>
+                            <input type="number" class="form-control" id="circuitDepth" value="10" min="5" max="100">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Optimization Parameters</label>
+                        <textarea class="form-control" id="quantumParams" rows="3" placeholder="Enter JSON parameters for quantum algorithm (optional)">{"max_iterations": 100, "convergence_threshold": 1e-6}</textarea>
+                    </div>
+                    <div class="status-message" id="quantumStatus"></div>
+                    <div class="progress-container" id="quantumProgress" style="display: none;">
+                        <div class="progress-bar" id="quantumProgressBar">0%</div>
+                    </div>
+                    <div class="capability-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-atom"></i> Execute Quantum Algorithm
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('quantumModal')">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            `);
+            
+            modal.querySelector('#quantumForm').addEventListener('submit', handleQuantumComputation);
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
         }
 
         function showMLModal() {
-            alert('Machine Learning modal will be implemented');
+            const modal = createModal('mlModal', 'Machine Learning Ensemble Training', `
+                <form id="mlForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Ensemble Method</label>
+                            <select class="form-control" id="ensembleMethod">
+                                <option value="voting">Voting Classifier</option>
+                                <option value="bagging">Bagging</option>
+                                <option value="boosting">Boosting</option>
+                                <option value="stacking">Stacking</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Target Variable</label>
+                            <select class="form-control" id="targetVariable">
+                                <option value="price_movement">Price Movement</option>
+                                <option value="volatility">Volatility Prediction</option>
+                                <option value="risk_score">Risk Score</option>
+                                <option value="sentiment">Market Sentiment</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Base Models</label>
+                        <div class="model-options">
+                            <label><input type="checkbox" id="useRandomForest" checked> Random Forest</label>
+                            <label><input type="checkbox" id="useXGBoost" checked> XGBoost</label>
+                            <label><input type="checkbox" id="useSVM" checked> Support Vector Machine</label>
+                            <label><input type="checkbox" id="useNeuralNet" checked> Neural Network</label>
+                            <label><input type="checkbox" id="useLinearReg"> Linear Regression</label>
+                            <label><input type="checkbox" id="useLogisticReg"> Logistic Regression</label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Train/Test Split</label>
+                            <input type="range" class="form-control" id="trainTestSplit" min="0.6" max="0.9" step="0.05" value="0.8">
+                            <small>Train: <span id="splitValue">80</span>% / Test: <span id="testSplitValue">20</span>%</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Cross-Validation Folds</label>
+                            <input type="number" class="form-control" id="cvFolds" value="5" min="3" max="10">
+                        </div>
+                    </div>
+                    <div class="status-message" id="mlStatus"></div>
+                    <div class="progress-container" id="mlProgress" style="display: none;">
+                        <div class="progress-bar" id="mlProgressBar">0%</div>
+                    </div>
+                    <div class="capability-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-brain"></i> Train ML Ensemble
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('mlModal')">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            `);
+            
+            modal.querySelector('#mlForm').addEventListener('submit', handleMLTraining);
+            modal.querySelector('#trainTestSplit').addEventListener('input', function() {
+                const trainPct = (this.value * 100).toFixed(0);
+                const testPct = (100 - trainPct).toFixed(0);
+                document.getElementById('splitValue').textContent = trainPct;
+                document.getElementById('testSplitValue').textContent = testPct;
+            });
+            
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
         }
 
         function showSystemStatus() {
-            alert('System Status page will be implemented');
+            const modal = createModal('statusModal', 'System Status & Monitoring', `
+                <div class="status-dashboard">
+                    <div class="status-section">
+                        <h3><i class="fas fa-server"></i> System Health</h3>
+                        <div class="health-metrics">
+                            <div class="health-item">
+                                <span class="health-label">API Status:</span>
+                                <span class="health-value online">Online</span>
+                            </div>
+                            <div class="health-item">
+                                <span class="health-label">Database:</span>
+                                <span class="health-value online">Connected</span>
+                            </div>
+                            <div class="health-item">
+                                <span class="health-label">Quantum Backend:</span>
+                                <span class="health-value offline">Offline</span>
+                            </div>
+                            <div class="health-item">
+                                <span class="health-label">Streaming:</span>
+                                <span class="health-value warning">Limited</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="status-section">
+                        <h3><i class="fas fa-chart-line"></i> Performance Metrics</h3>
+                        <div class="perf-metrics">
+                            <div class="metric-card">
+                                <div class="metric-number" id="activeJobs">0</div>
+                                <div class="metric-label">Active Jobs</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-number" id="totalAgents">${systemStats.totalAgents}</div>
+                                <div class="metric-label">Total Agents</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-number" id="systemUptime">${Math.floor(systemStats.uptime / 60)}</div>
+                                <div class="metric-label">Uptime (min)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="status-actions">
+                        <button class="btn btn-primary" onclick="refreshSystemStatus()">
+                            <i class="fas fa-sync"></i> Refresh Status
+                        </button>
+                        <button class="btn btn-secondary" onclick="closeModal('statusModal')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `);
+            
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
         }
 
         function showLogsModal() {
-            alert('Logs viewer will be implemented');
+            const modal = createModal('logsModal', 'System Logs & Activity', `
+                <div class="logs-container">
+                    <div class="logs-header">
+                        <div class="log-filters">
+                            <select id="logLevel" class="form-control">
+                                <option value="all">All Levels</option>
+                                <option value="info">Info</option>
+                                <option value="warning">Warning</option>
+                                <option value="error">Error</option>
+                            </select>
+                            <button class="btn btn-small" onclick="clearLogs()">Clear</button>
+                            <button class="btn btn-small" onclick="refreshLogs()">Refresh</button>
+                        </div>
+                    </div>
+                    <div class="logs-content" id="logsContent">
+                        <div class="log-entry info">
+                            <span class="log-time">${new Date().toLocaleTimeString()}</span>
+                            <span class="log-level">INFO</span>
+                            <span class="log-message">NEURICX Platform initialized successfully</span>
+                        </div>
+                        <div class="log-entry info">
+                            <span class="log-time">${new Date(Date.now() - 30000).toLocaleTimeString()}</span>
+                            <span class="log-level">INFO</span>
+                            <span class="log-message">System health check completed</span>
+                        </div>
+                        <div class="log-entry warning">
+                            <span class="log-time">${new Date(Date.now() - 60000).toLocaleTimeString()}</span>
+                            <span class="log-level">WARN</span>
+                            <span class="log-message">Quantum backend connection timeout</span>
+                        </div>
+                    </div>
+                    <div class="logs-actions">
+                        <button class="btn btn-primary" onclick="exportLogs()">
+                            <i class="fas fa-download"></i> Export Logs
+                        </button>
+                        <button class="btn btn-secondary" onclick="closeModal('logsModal')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `);
+            
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
         }
 
         function closeModal(modalId) {
@@ -1904,6 +2371,187 @@
             } catch (error) {
                 showStatus('sisirStatus', 'SISIR analysis failed: ' + error.message, 'error');
             }
+        }
+
+        // Handler functions for platform capabilities
+        async function handlePolicyAnalysis(e) {
+            e.preventDefault();
+            
+            const formData = {
+                policy_type: document.getElementById('policyType').value,
+                intervention_magnitude: parseFloat(document.getElementById('interventionMag').value),
+                analysis_duration: parseInt(document.getElementById('analysisDuration').value)
+            };
+            
+            showStatus('policyStatus', 'Initializing policy analysis...', 'warning');
+            showProgress('policyProgress', 'policyProgressBar');
+            
+            try {
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                
+                if (isGitHubPages && window.neuricxDemo) {
+                    const results = await window.neuricxDemo.runPolicyAnalysis(formData);
+                    showStatus('policyStatus', 'Policy analysis completed successfully!', 'success');
+                } else {
+                    // API call for local development
+                    const response = await fetch(`${API_BASE}/policy/analyze`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    const results = await response.json();
+                    showStatus('policyStatus', 'Policy analysis completed successfully!', 'success');
+                }
+                
+                setTimeout(() => closeModal('policyModal'), 2000);
+            } catch (error) {
+                showStatus('policyStatus', 'Policy analysis failed: ' + error.message, 'error');
+            }
+        }
+
+        async function handleCrisisAnalysis(e) {
+            e.preventDefault();
+            
+            const formData = {
+                prediction_horizon: parseInt(document.getElementById('predictionHorizon').value),
+                crisis_type: document.getElementById('crisisType').value
+            };
+            
+            showStatus('crisisStatus', 'Initializing crisis prediction...', 'warning');
+            showProgress('crisisProgress', 'crisisProgressBar');
+            
+            try {
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                
+                if (isGitHubPages && window.neuricxDemo) {
+                    const results = await window.neuricxDemo.runCrisisPrediction(formData);
+                    showStatus('crisisStatus', 'Crisis prediction completed successfully!', 'success');
+                } else {
+                    const response = await fetch(`${API_BASE}/crisis/predict`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    const results = await response.json();
+                    showStatus('crisisStatus', 'Crisis prediction completed successfully!', 'success');
+                }
+                
+                setTimeout(() => closeModal('crisisModal'), 2000);
+            } catch (error) {
+                showStatus('crisisStatus', 'Crisis prediction failed: ' + error.message, 'error');
+            }
+        }
+
+        async function handleQuantumComputation(e) {
+            e.preventDefault();
+            
+            const formData = {
+                algorithm: document.getElementById('quantumAlgorithm').value,
+                backend: document.getElementById('quantumBackend').value,
+                n_qubits: parseInt(document.getElementById('numQubits').value),
+                circuit_depth: parseInt(document.getElementById('circuitDepth').value)
+            };
+            
+            showStatus('quantumStatus', 'Initializing quantum computation...', 'warning');
+            showProgress('quantumProgress', 'quantumProgressBar');
+            
+            try {
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                
+                if (isGitHubPages && window.neuricxDemo) {
+                    const results = await window.neuricxDemo.runQuantumComputation(formData);
+                    showStatus('quantumStatus', 'Quantum computation completed successfully!', 'success');
+                } else {
+                    const response = await fetch(`${API_BASE}/quantum/run`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    const results = await response.json();
+                    showStatus('quantumStatus', 'Quantum computation completed successfully!', 'success');
+                }
+                
+                setTimeout(() => closeModal('quantumModal'), 2000);
+            } catch (error) {
+                showStatus('quantumStatus', 'Quantum computation failed: ' + error.message, 'error');
+            }
+        }
+
+        async function handleMLTraining(e) {
+            e.preventDefault();
+            
+            const baseModels = [];
+            if (document.getElementById('useRandomForest').checked) baseModels.push('rf');
+            if (document.getElementById('useXGBoost').checked) baseModels.push('xgb');
+            if (document.getElementById('useSVM').checked) baseModels.push('svm');
+            if (document.getElementById('useNeuralNet').checked) baseModels.push('nn');
+            if (document.getElementById('useLinearReg').checked) baseModels.push('lr');
+            if (document.getElementById('useLogisticReg').checked) baseModels.push('logistic');
+            
+            const formData = {
+                ensemble_method: document.getElementById('ensembleMethod').value,
+                target_variable: document.getElementById('targetVariable').value,
+                base_models: baseModels,
+                train_test_split: parseFloat(document.getElementById('trainTestSplit').value),
+                cv_folds: parseInt(document.getElementById('cvFolds').value)
+            };
+            
+            showStatus('mlStatus', 'Initializing ML ensemble training...', 'warning');
+            showProgress('mlProgress', 'mlProgressBar');
+            
+            try {
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                
+                if (isGitHubPages && window.neuricxDemo) {
+                    const results = await window.neuricxDemo.trainMLEnsemble(formData);
+                    showStatus('mlStatus', 'ML ensemble training completed successfully!', 'success');
+                } else {
+                    const response = await fetch(`${API_BASE}/ml/train`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    const results = await response.json();
+                    showStatus('mlStatus', 'ML ensemble training completed successfully!', 'success');
+                }
+                
+                setTimeout(() => closeModal('mlModal'), 2000);
+            } catch (error) {
+                showStatus('mlStatus', 'ML ensemble training failed: ' + error.message, 'error');
+            }
+        }
+
+        // Utility functions for system status and logs
+        function refreshSystemStatus() {
+            // Refresh system metrics
+            document.getElementById('activeJobs').textContent = Object.keys(systemStats).length;
+            document.getElementById('totalAgents').textContent = systemStats.totalAgents;
+            document.getElementById('systemUptime').textContent = Math.floor(systemStats.uptime / 60);
+        }
+
+        function clearLogs() {
+            document.getElementById('logsContent').innerHTML = '<div class="log-entry info"><span class="log-time">' + new Date().toLocaleTimeString() + '</span><span class="log-level">INFO</span><span class="log-message">Logs cleared</span></div>';
+        }
+
+        function refreshLogs() {
+            const logsContent = document.getElementById('logsContent');
+            const newLog = document.createElement('div');
+            newLog.className = 'log-entry info';
+            newLog.innerHTML = `<span class="log-time">${new Date().toLocaleTimeString()}</span><span class="log-level">INFO</span><span class="log-message">Logs refreshed</span>`;
+            logsContent.insertBefore(newLog, logsContent.firstChild);
+        }
+
+        function exportLogs() {
+            const logs = document.getElementById('logsContent').innerText;
+            const dataBlob = new Blob([logs], {type: 'text/plain'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `neuricx-logs-${Date.now()}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         function createModal(id, title, content) {
