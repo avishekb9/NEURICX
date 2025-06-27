@@ -640,6 +640,121 @@
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        /* Streaming Dashboard Styling */
+        .streaming-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--background-light);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .symbol {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+        
+        .price {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+        
+        .change {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .change.positive {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--success-color);
+        }
+        
+        .change.negative {
+            background: rgba(255, 71, 87, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .indicator-card {
+            padding: 15px;
+            background: var(--background-light);
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .indicator-name {
+            color: var(--text-medium);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .indicator-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .indicator-trend {
+            font-size: 1.2rem;
+        }
+        
+        .indicator-trend.up {
+            color: var(--success-color);
+        }
+        
+        .indicator-trend.down {
+            color: var(--danger-color);
+        }
+        
+        .live-feed {
+            max-height: 200px;
+            overflow-y: auto;
+            background: var(--background-dark);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .feed-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 4px;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .timestamp {
+            color: var(--text-medium);
+            font-size: 0.8rem;
+            margin-right: 10px;
+        }
+        
+        .message {
+            color: var(--text-light);
+        }
+
         /* SISIR Special Styling */
         .capability-card.sisir {
             border: 2px solid #e91e63;
@@ -1679,11 +1794,14 @@
                 case 'ml':
                     showMLResults();
                     return;
+                case 'realtime':
+                case 'streaming':
+                    showStreamingResults();
+                    return;
                 default:
                     // For other types, use existing dashboard URLs
                     const dashboardUrls = {
                         'simulation': '/dashboard.html',
-                        'realtime': '/dashboard.html#realtime',
                         'monitoring': 'http://localhost:3001' // Grafana
                     };
                     
@@ -1969,6 +2087,183 @@
 
             document.body.appendChild(modal);
             modal.style.display = 'block';
+        }
+
+        function showStreamingResults() {
+            const results = window.streamingResults;
+            if (!results) {
+                alert('No streaming results available. Please start streaming first.');
+                return;
+            }
+
+            const modal = createModal('streamingResultsModal', 'Real-time Streaming Dashboard', `
+                <div class="results-container">
+                    <div class="results-section">
+                        <h3><i class="fas fa-stream"></i> Streaming Status</h3>
+                        <div class="streaming-overview">
+                            <div class="stat-card">
+                                <div class="stat-number">${results.status}</div>
+                                <div class="stat-label">Stream Status</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${results.streamId || 'N/A'}</div>
+                                <div class="stat-label">Stream ID</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-section">
+                        <h3><i class="fas fa-chart-line"></i> Live Market Data</h3>
+                        <div class="market-data">
+                            <div class="data-grid">
+                                <div class="data-item">
+                                    <span class="symbol">AAPL</span>
+                                    <span class="price">$${(150 + Math.random() * 20 - 10).toFixed(2)}</span>
+                                    <span class="change ${Math.random() > 0.5 ? 'positive' : 'negative'}">
+                                        ${Math.random() > 0.5 ? '+' : '-'}${(Math.random() * 5).toFixed(2)}%
+                                    </span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="symbol">MSFT</span>
+                                    <span class="price">$${(300 + Math.random() * 30 - 15).toFixed(2)}</span>
+                                    <span class="change ${Math.random() > 0.5 ? 'positive' : 'negative'}">
+                                        ${Math.random() > 0.5 ? '+' : '-'}${(Math.random() * 3).toFixed(2)}%
+                                    </span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="symbol">GOOGL</span>
+                                    <span class="price">$${(2500 + Math.random() * 200 - 100).toFixed(2)}</span>
+                                    <span class="change ${Math.random() > 0.5 ? 'positive' : 'negative'}">
+                                        ${Math.random() > 0.5 ? '+' : '-'}${(Math.random() * 4).toFixed(2)}%
+                                    </span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="symbol">TSLA</span>
+                                    <span class="price">$${(200 + Math.random() * 50 - 25).toFixed(2)}</span>
+                                    <span class="change ${Math.random() > 0.5 ? 'positive' : 'negative'}">
+                                        ${Math.random() > 0.5 ? '+' : '-'}${(Math.random() * 6).toFixed(2)}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-section">
+                        <h3><i class="fas fa-chart-area"></i> Economic Indicators</h3>
+                        <div class="indicators-grid">
+                            <div class="indicator-card">
+                                <div class="indicator-name">Inflation Rate</div>
+                                <div class="indicator-value">${(2.1 + Math.random() * 0.5 - 0.25).toFixed(2)}%</div>
+                                <div class="indicator-trend ${Math.random() > 0.5 ? 'up' : 'down'}">
+                                    <i class="fas fa-arrow-${Math.random() > 0.5 ? 'up' : 'down'}"></i>
+                                </div>
+                            </div>
+                            <div class="indicator-card">
+                                <div class="indicator-name">Unemployment</div>
+                                <div class="indicator-value">${(3.7 + Math.random() * 0.3 - 0.15).toFixed(1)}%</div>
+                                <div class="indicator-trend ${Math.random() > 0.5 ? 'up' : 'down'}">
+                                    <i class="fas fa-arrow-${Math.random() > 0.5 ? 'up' : 'down'}"></i>
+                                </div>
+                            </div>
+                            <div class="indicator-card">
+                                <div class="indicator-name">GDP Growth</div>
+                                <div class="indicator-value">${(2.3 + Math.random() * 0.4 - 0.2).toFixed(1)}%</div>
+                                <div class="indicator-trend ${Math.random() > 0.5 ? 'up' : 'down'}">
+                                    <i class="fas fa-arrow-${Math.random() > 0.5 ? 'up' : 'down'}"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-section">
+                        <h3><i class="fas fa-bell"></i> Live Updates</h3>
+                        <div class="live-feed" id="liveFeed">
+                            <div class="feed-item">
+                                <span class="timestamp">${new Date().toLocaleTimeString()}</span>
+                                <span class="message">Market data streaming initiated for ${(results.symbols || ['AAPL', 'MSFT', 'GOOGL']).join(', ')}</span>
+                            </div>
+                            <div class="feed-item">
+                                <span class="timestamp">${new Date(Date.now() - 30000).toLocaleTimeString()}</span>
+                                <span class="message">Connected to data sources successfully</span>
+                            </div>
+                            <div class="feed-item">
+                                <span class="timestamp">${new Date(Date.now() - 60000).toLocaleTimeString()}</span>
+                                <span class="message">Real-time analytics engine started</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-actions">
+                        <button class="btn btn-primary" onclick="exportResults('streaming')">
+                            <i class="fas fa-download"></i> Export Stream Data
+                        </button>
+                        <button class="btn btn-secondary" onclick="stopStreaming()">
+                            <i class="fas fa-stop"></i> Stop Streaming
+                        </button>
+                        <button class="btn btn-accent" onclick="closeModal('streamingResultsModal')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `);
+
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
+
+            // Start live data simulation
+            startLiveDataUpdates();
+        }
+
+        function startLiveDataUpdates() {
+            // Simulate live data updates every 3 seconds
+            const interval = setInterval(() => {
+                const liveFeed = document.getElementById('liveFeed');
+                if (!liveFeed) {
+                    clearInterval(interval);
+                    return;
+                }
+
+                const newUpdate = document.createElement('div');
+                newUpdate.className = 'feed-item';
+                newUpdate.innerHTML = `
+                    <span class="timestamp">${new Date().toLocaleTimeString()}</span>
+                    <span class="message">${generateRandomUpdate()}</span>
+                `;
+                
+                liveFeed.insertBefore(newUpdate, liveFeed.firstChild);
+                
+                // Keep only last 10 updates
+                while (liveFeed.children.length > 10) {
+                    liveFeed.removeChild(liveFeed.lastChild);
+                }
+            }, 3000);
+            
+            // Store interval for cleanup
+            window.streamingInterval = interval;
+        }
+
+        function generateRandomUpdate() {
+            const updates = [
+                'Market volatility detected in tech sector',
+                'New economic data received - GDP figures updated',
+                'Alert: Unusual trading volume in AAPL',
+                'Consumer confidence index updated',
+                'Federal Reserve meeting minutes released',
+                'Cryptocurrency market showing increased activity',
+                'Energy sector experiencing price fluctuations',
+                'International trade data synchronized'
+            ];
+            return updates[Math.floor(Math.random() * updates.length)];
+        }
+
+        function stopStreaming() {
+            if (window.streamingInterval) {
+                clearInterval(window.streamingInterval);
+                window.streamingInterval = null;
+            }
+            updateStatusIndicator('streaming-status', 'offline');
+            alert('Real-time streaming stopped.');
+            closeModal('streamingResultsModal');
         }
 
         function exportResults(type) {
@@ -2496,10 +2791,26 @@
             showStatus('streamStatus', 'Starting real-time streaming...', 'warning');
             
             try {
-                // Start streaming service
-                const response = await axios.post(`${API_BASE}/streaming/start`, formData);
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                let results;
                 
-                showStatus('streamStatus', 'Streaming started successfully!', 'success');
+                if (isGitHubPages && window.neuricxDemo) {
+                    // Use demo mode
+                    results = await window.neuricxDemo.startStreaming(formData);
+                } else {
+                    // API call for local development
+                    const response = await fetch(`${API_BASE}/streaming/start`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    results = await response.json();
+                }
+                
+                // Store results globally
+                window.streamingResults = results;
+                
+                showStatus('streamStatus', 'Streaming started successfully! Opening dashboard...', 'success');
                 updateStatusIndicator('streaming-status', 'online');
                 
                 setTimeout(() => {
