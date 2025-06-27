@@ -1082,6 +1082,12 @@
         }
 
         function openDashboard(type) {
+            // Handle SISIR results display
+            if (type === 'sisir') {
+                showSISIRResults();
+                return;
+            }
+            
             const dashboardUrls = {
                 'simulation': '/dashboard.html',
                 'realtime': '/dashboard.html#realtime',
@@ -1096,6 +1102,423 @@
             if (url) {
                 window.open(url, '_blank');
             }
+        }
+
+        function showSISIRResults() {
+            const results = window.sisirResults;
+            if (!results) {
+                alert('No SISIR results available. Please run an analysis first.');
+                return;
+            }
+
+            const modal = createModal('sisirResultsModal', 'SISIR Analysis Results', `
+                <div class="sisir-results-container">
+                    <!-- Profile Overview -->
+                    <div class="results-section">
+                        <h3><i class="fas fa-user-circle"></i> Profile Overview</h3>
+                        <div class="profile-stats">
+                            <div class="stat-card">
+                                <div class="stat-number">${results.profile_data.follower_count.toLocaleString()}</div>
+                                <div class="stat-label">Followers</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${results.profile_data.following_count.toLocaleString()}</div>
+                                <div class="stat-label">Following</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${results.profile_data.post_count.toLocaleString()}</div>
+                                <div class="stat-label">Posts</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${results.profile_data.engagement_rate.toFixed(1)}%</div>
+                                <div class="stat-label">Engagement Rate</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Economic Impact Score -->
+                    <div class="results-section">
+                        <h3><i class="fas fa-chart-line"></i> Economic Impact Analysis</h3>
+                        <div class="economic-scores">
+                            <div class="score-card primary">
+                                <div class="score-number">${results.economic_impact.overall_score.toFixed(0)}</div>
+                                <div class="score-label">Overall Economic Impact</div>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${results.economic_impact.overall_score}%"></div>
+                                </div>
+                            </div>
+                            <div class="economic-metrics">
+                                <div class="metric">
+                                    <span class="metric-label">Market Influence:</span>
+                                    <span class="metric-value">${results.economic_impact.market_influence.toFixed(0)}/100</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Consumer Sentiment Impact:</span>
+                                    <span class="metric-value">${results.economic_impact.consumer_sentiment_impact.toFixed(0)}/100</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Viral Potential:</span>
+                                    <span class="metric-value">${results.economic_impact.viral_potential.toFixed(0)}/100</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Brand Value Correlation:</span>
+                                    <span class="metric-value">${results.economic_impact.brand_value_correlation.toFixed(0)}/100</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sentiment Analysis -->
+                    <div class="results-section">
+                        <h3><i class="fas fa-heart"></i> Sentiment Analysis</h3>
+                        <div class="sentiment-grid">
+                            <div class="sentiment-score">
+                                <div class="sentiment-value ${results.sentiment_analysis.average_sentiment > 0 ? 'positive' : results.sentiment_analysis.average_sentiment < 0 ? 'negative' : 'neutral'}">
+                                    ${results.sentiment_analysis.average_sentiment.toFixed(2)}
+                                </div>
+                                <div class="sentiment-label">Overall Sentiment</div>
+                            </div>
+                            <div class="sentiment-details">
+                                <div class="sentiment-item">
+                                    <span>Economic Sentiment:</span>
+                                    <span class="sentiment-bar">
+                                        <div class="sentiment-fill" style="width: ${(results.sentiment_analysis.economic_sentiment + 1) * 50}%"></div>
+                                    </span>
+                                </div>
+                                <div class="sentiment-item">
+                                    <span>Confidence Score:</span>
+                                    <span>${(results.sentiment_analysis.confidence_score * 100).toFixed(0)}%</span>
+                                </div>
+                                <div class="sentiment-item">
+                                    <span>Trend:</span>
+                                    <span class="trend-${results.sentiment_analysis.sentiment_trend}">${results.sentiment_analysis.sentiment_trend}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Viral Predictions -->
+                    <div class="results-section">
+                        <h3><i class="fas fa-fire"></i> Viral Content Insights</h3>
+                        <div class="viral-insights">
+                            <div class="viral-metrics">
+                                <div class="viral-metric">
+                                    <span class="metric-label">Optimal Content Length:</span>
+                                    <span class="metric-value">${results.viral_predictions.optimal_content_length} characters</span>
+                                </div>
+                                <div class="viral-metric">
+                                    <span class="metric-label">Best Posting Time:</span>
+                                    <span class="metric-value">${results.viral_predictions.optimal_posting_hour}:00</span>
+                                </div>
+                                <div class="viral-metric">
+                                    <span class="metric-label">Engagement Threshold:</span>
+                                    <span class="metric-value">${results.viral_predictions.engagement_threshold.toFixed(1)}%</span>
+                                </div>
+                            </div>
+                            <div class="top-hashtags">
+                                <h4>Top Viral Hashtags:</h4>
+                                <div class="hashtag-list">
+                                    ${Object.entries(results.viral_predictions.top_viral_hashtags).map(([tag, count]) => 
+                                        `<span class="hashtag-tag">${tag} (${count})</span>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Growth Recommendations -->
+                    <div class="results-section">
+                        <h3><i class="fas fa-rocket"></i> Growth Recommendations</h3>
+                        <div class="recommendations">
+                            ${results.recommendations.map(rec => `
+                                <div class="recommendation-item">
+                                    <i class="fas fa-lightbulb"></i>
+                                    <span>${rec}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Market Correlations -->
+                    <div class="results-section">
+                        <h3><i class="fas fa-chart-area"></i> Market Correlations</h3>
+                        <div class="market-correlations">
+                            <div class="correlation-item">
+                                <span>S&P 500:</span>
+                                <div class="correlation-bar">
+                                    <div class="correlation-fill" style="width: ${Math.abs(results.market_correlations.sp500_correlation) * 100}%"></div>
+                                </div>
+                                <span>${results.market_correlations.sp500_correlation.toFixed(2)}</span>
+                            </div>
+                            <div class="correlation-item">
+                                <span>Crypto Market:</span>
+                                <div class="correlation-bar">
+                                    <div class="correlation-fill" style="width: ${Math.abs(results.market_correlations.crypto_correlation) * 100}%"></div>
+                                </div>
+                                <span>${results.market_correlations.crypto_correlation.toFixed(2)}</span>
+                            </div>
+                            <div class="correlation-item">
+                                <span>Consumer Confidence:</span>
+                                <div class="correlation-bar">
+                                    <div class="correlation-fill" style="width: ${Math.abs(results.market_correlations.consumer_confidence_correlation) * 100}%"></div>
+                                </div>
+                                <span>${results.market_correlations.consumer_confidence_correlation.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="results-actions">
+                        <button class="btn btn-primary" onclick="exportSISIRResults()">
+                            <i class="fas fa-download"></i> Export Results
+                        </button>
+                        <button class="btn btn-secondary" onclick="startSISIRMonitoring()">
+                            <i class="fas fa-eye"></i> Start Monitoring
+                        </button>
+                        <button class="btn btn-accent" onclick="closeModal('sisirResultsModal')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `);
+
+            // Add SISIR results styling
+            const style = document.createElement('style');
+            style.textContent = `
+                .sisir-results-container {
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    padding: 20px 0;
+                }
+                .results-section {
+                    margin-bottom: 25px;
+                    padding: 20px;
+                    background: rgba(0, 212, 255, 0.05);
+                    border-radius: 10px;
+                    border-left: 4px solid var(--primary-color);
+                }
+                .results-section h3 {
+                    color: var(--primary-color);
+                    margin-bottom: 15px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                .profile-stats {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                    gap: 15px;
+                }
+                .stat-card {
+                    background: var(--background-light);
+                    padding: 15px;
+                    border-radius: 8px;
+                    text-align: center;
+                }
+                .stat-number {
+                    font-size: 1.8rem;
+                    font-weight: bold;
+                    color: var(--primary-color);
+                }
+                .stat-label {
+                    color: var(--text-medium);
+                    font-size: 0.9rem;
+                }
+                .score-card.primary {
+                    background: linear-gradient(135deg, rgba(233, 30, 99, 0.1), rgba(156, 39, 176, 0.1));
+                    padding: 20px;
+                    border-radius: 10px;
+                    text-align: center;
+                    margin-bottom: 15px;
+                }
+                .score-number {
+                    font-size: 3rem;
+                    font-weight: bold;
+                    color: #e91e63;
+                }
+                .score-label {
+                    color: var(--text-light);
+                    margin-top: 5px;
+                }
+                .score-bar {
+                    width: 100%;
+                    height: 8px;
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 4px;
+                    margin-top: 10px;
+                    overflow: hidden;
+                }
+                .score-fill {
+                    height: 100%;
+                    background: linear-gradient(90deg, #e91e63, #9c27b0);
+                    transition: width 1s ease;
+                }
+                .economic-metrics {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 10px;
+                }
+                .metric {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 10px;
+                    background: var(--background-light);
+                    border-radius: 6px;
+                }
+                .sentiment-grid {
+                    display: grid;
+                    grid-template-columns: 200px 1fr;
+                    gap: 20px;
+                    align-items: center;
+                }
+                .sentiment-score {
+                    text-align: center;
+                }
+                .sentiment-value {
+                    font-size: 2.5rem;
+                    font-weight: bold;
+                    padding: 20px;
+                    border-radius: 10px;
+                }
+                .sentiment-value.positive { color: var(--success-color); background: rgba(0, 255, 136, 0.1); }
+                .sentiment-value.negative { color: var(--danger-color); background: rgba(255, 71, 87, 0.1); }
+                .sentiment-value.neutral { color: var(--warning-color); background: rgba(255, 170, 0, 0.1); }
+                .sentiment-details {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                .sentiment-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 8px 12px;
+                    background: var(--background-light);
+                    border-radius: 6px;
+                }
+                .sentiment-bar {
+                    width: 100px;
+                    height: 6px;
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 3px;
+                    overflow: hidden;
+                }
+                .sentiment-fill {
+                    height: 100%;
+                    background: var(--primary-color);
+                    transition: width 0.5s ease;
+                }
+                .trend-improving { color: var(--success-color); }
+                .trend-stable { color: var(--warning-color); }
+                .trend-declining { color: var(--danger-color); }
+                .viral-insights {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 20px;
+                }
+                .viral-metrics {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                .viral-metric {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 10px;
+                    background: var(--background-light);
+                    border-radius: 6px;
+                }
+                .hashtag-list {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    margin-top: 10px;
+                }
+                .hashtag-tag {
+                    background: var(--primary-color);
+                    color: var(--background-dark);
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    font-size: 0.8rem;
+                    font-weight: bold;
+                }
+                .recommendations {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                .recommendation-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 12px;
+                    background: rgba(0, 255, 136, 0.05);
+                    border-radius: 8px;
+                    border-left: 3px solid var(--success-color);
+                }
+                .market-correlations {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+                .correlation-item {
+                    display: grid;
+                    grid-template-columns: 150px 1fr 60px;
+                    align-items: center;
+                    gap: 15px;
+                    padding: 10px;
+                    background: var(--background-light);
+                    border-radius: 6px;
+                }
+                .correlation-bar {
+                    height: 8px;
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 4px;
+                    overflow: hidden;
+                }
+                .correlation-fill {
+                    height: 100%;
+                    background: var(--accent-color);
+                    transition: width 0.5s ease;
+                }
+                .results-actions {
+                    display: flex;
+                    gap: 15px;
+                    justify-content: center;
+                    margin-top: 30px;
+                    padding-top: 20px;
+                    border-top: 1px solid rgba(255, 255, 255, 0.1);
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Set modal size for results
+            const modalContent = modal.querySelector('.modal-content');
+            modalContent.style.maxWidth = '1000px';
+            modalContent.style.maxHeight = '90vh';
+
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
+        }
+
+        function exportSISIRResults() {
+            const results = window.sisirResults;
+            if (!results) return;
+
+            const dataStr = JSON.stringify(results, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `sisir-analysis-${Date.now()}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function startSISIRMonitoring() {
+            alert('Real-time SISIR monitoring started! You will receive notifications about significant changes in social sentiment and engagement patterns.');
         }
 
         // Infrastructure Deployment
@@ -1408,55 +1831,75 @@
             showProgress('sisirProgress', 'sisirProgressBar');
             
             try {
-                // Real SISIR API call with progress simulation
-                const steps = [
-                    { progress: 10, message: 'Connecting to social media APIs...' },
-                    { progress: 25, message: 'Extracting profile data and engagement metrics...' },
-                    { progress: 40, message: 'Analyzing content sentiment and emotional patterns...' },
-                    { progress: 55, message: 'Correlating social signals with economic indicators...' },
-                    { progress: 70, message: 'Running viral content prediction models...' },
-                    { progress: 85, message: 'Generating growth optimization strategies...' },
-                    { progress: 95, message: 'Compiling comprehensive analysis report...' }
-                ];
+                // Detect if running on GitHub Pages (demo mode)
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                
+                if (isGitHubPages && window.neuricxDemo) {
+                    // Use demo mode
+                    showStatus('sisirStatus', 'Running SISIR demo analysis...', 'warning');
+                    const sisirResults = await window.neuricxDemo.analyzeSISIR(formData);
+                    
+                    showStatus('sisirStatus', 'SISIR demo analysis completed! Opening results...', 'success');
+                    
+                    // Store results for dashboard
+                    window.sisirResults = sisirResults;
+                    
+                    setTimeout(() => {
+                        closeModal('sisirModal');
+                        openDashboard('sisir');
+                    }, 2000);
+                    
+                } else {
+                    // Real SISIR API call with progress simulation
+                    const steps = [
+                        { progress: 10, message: 'Connecting to social media APIs...' },
+                        { progress: 25, message: 'Extracting profile data and engagement metrics...' },
+                        { progress: 40, message: 'Analyzing content sentiment and emotional patterns...' },
+                        { progress: 55, message: 'Correlating social signals with economic indicators...' },
+                        { progress: 70, message: 'Running viral content prediction models...' },
+                        { progress: 85, message: 'Generating growth optimization strategies...' },
+                        { progress: 95, message: 'Compiling comprehensive analysis report...' }
+                    ];
 
-                // Simulate progress
-                for (const step of steps) {
-                    updateProgress('sisirProgressBar', step.progress);
-                    showStatus('sisirStatus', step.message, 'warning');
-                    await new Promise(resolve => setTimeout(resolve, 1200));
+                    // Simulate progress
+                    for (const step of steps) {
+                        updateProgress('sisirProgressBar', step.progress);
+                        showStatus('sisirStatus', step.message, 'warning');
+                        await new Promise(resolve => setTimeout(resolve, 1200));
+                    }
+
+                    // Make actual API call
+                    updateProgress('sisirProgressBar', 100);
+                    showStatus('sisirStatus', 'Finalizing SISIR analysis...', 'warning');
+                    
+                    const response = await fetch(`${API_BASE}/sisir/analyze`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`SISIR API failed: ${response.status} ${response.statusText}`);
+                    }
+
+                    const sisirResults = await response.json();
+                    
+                    showStatus('sisirStatus', 'SISIR analysis completed successfully! Opening dashboard...', 'success');
+                    
+                    // Store results for dashboard
+                    window.sisirResults = sisirResults;
+                    
+                    // Update system stats
+                    systemStats.totalAgents += 100; // Simulated social agents
+                    updateStats();
+                    
+                    setTimeout(() => {
+                        closeModal('sisirModal');
+                        openDashboard('sisir');
+                    }, 2000);
                 }
-
-                // Make actual API call
-                updateProgress('sisirProgressBar', 100);
-                showStatus('sisirStatus', 'Finalizing SISIR analysis...', 'warning');
-                
-                const response = await fetch(`${API_BASE}/sisir/analyze`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`SISIR API failed: ${response.status} ${response.statusText}`);
-                }
-
-                const sisirResults = await response.json();
-                
-                showStatus('sisirStatus', 'SISIR analysis completed successfully! Opening dashboard...', 'success');
-                
-                // Store results for dashboard
-                window.sisirResults = sisirResults;
-                
-                // Update system stats
-                systemStats.totalAgents += 100; // Simulated social agents
-                updateStats();
-                
-                setTimeout(() => {
-                    closeModal('sisirModal');
-                    openDashboard('sisir');
-                }, 2000);
                 
             } catch (error) {
                 showStatus('sisirStatus', 'SISIR analysis failed: ' + error.message, 'error');
