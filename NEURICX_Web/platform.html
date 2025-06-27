@@ -1357,13 +1357,9 @@
     
     <!-- Include additional components -->
     <script>
-        // Detect if running on GitHub Pages and use demo mode
-        const isGitHubPages = window.location.hostname.includes('github.io');
-        const scriptToLoad = isGitHubPages ? 'demo-startup.js' : 'startup.js';
-        
-        // Load appropriate startup script
+        // Load startup script for backend integration
         const startupScript = document.createElement('script');
-        startupScript.src = scriptToLoad;
+        startupScript.src = 'startup.js';
         document.head.appendChild(startupScript);
     </script>
     <script src="modals.js"></script>
@@ -2022,6 +2018,7 @@
 
         function showQuantumResults() {
             const results = window.quantumResults;
+            console.log('Quantum Results:', results); // Debug log
             if (!results) {
                 alert('No quantum computation results available. Please run a computation first.');
                 return;
@@ -2033,15 +2030,15 @@
                         <h3><i class="fas fa-atom"></i> Quantum Algorithm Performance</h3>
                         <div class="quantum-overview">
                             <div class="stat-card">
-                                <div class="stat-number">${results.results.algorithm}</div>
+                                <div class="stat-number">${results.algorithm}</div>
                                 <div class="stat-label">Algorithm</div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-number">${results.results.backend}</div>
+                                <div class="stat-number">${results.backend}</div>
                                 <div class="stat-label">Backend</div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-number">${results.results.n_qubits}</div>
+                                <div class="stat-number">${results.n_qubits}</div>
                                 <div class="stat-label">Qubits Used</div>
                             </div>
                         </div>
@@ -2978,36 +2975,26 @@
             showProgress('simProgress', 'simProgressBar');
             
             try {
-                const isGitHubPages = window.location.hostname.includes('github.io');
-                let results;
+                // API calls for backend integration
+                updateProgress('simProgressBar', 25);
+                const economyResponse = await fetch(`${API_BASE}/economy/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const economyData = await economyResponse.json();
                 
-                if (isGitHubPages && window.neuricxDemo) {
-                    // Use demo mode
-                    updateProgress('simProgressBar', 50);
-                    results = await window.neuricxDemo.createSimulation(formData);
-                    updateProgress('simProgressBar', 100);
-                } else {
-                    // API calls for local development
-                    updateProgress('simProgressBar', 25);
-                    const economyResponse = await fetch(`${API_BASE}/economy/create`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    });
-                    const economyData = await economyResponse.json();
-                    
-                    updateProgress('simProgressBar', 50);
-                    const simResponse = await fetch(`${API_BASE}/simulation/run`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            economy_id: economyData.economy_id,
-                            n_steps: formData.n_steps
-                        })
-                    });
-                    results = await simResponse.json();
-                    updateProgress('simProgressBar', 100);
-                }
+                updateProgress('simProgressBar', 50);
+                const simResponse = await fetch(`${API_BASE}/simulation/run`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        economy_id: economyData.economy_id,
+                        n_steps: formData.n_steps
+                    })
+                });
+                const results = await simResponse.json();
+                updateProgress('simProgressBar', 100);
                 
                 // Store results globally
                 window.simulationResults = results;
@@ -3042,21 +3029,13 @@
             showStatus('streamStatus', 'Starting real-time streaming...', 'warning');
             
             try {
-                const isGitHubPages = window.location.hostname.includes('github.io');
-                let results;
-                
-                if (isGitHubPages && window.neuricxDemo) {
-                    // Use demo mode
-                    results = await window.neuricxDemo.startStreaming(formData);
-                } else {
-                    // API call for local development
-                    const response = await fetch(`${API_BASE}/streaming/start`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    });
-                    results = await response.json();
-                }
+                // API call for backend integration
+                const response = await fetch(`${API_BASE}/streaming/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const results = await response.json();
                 
                 // Store results globally
                 window.streamingResults = results;
@@ -3276,75 +3255,55 @@
             showProgress('sisirProgress', 'sisirProgressBar');
             
             try {
-                // Detect if running on GitHub Pages (demo mode)
-                const isGitHubPages = window.location.hostname.includes('github.io');
-                
-                if (isGitHubPages && window.neuricxDemo) {
-                    // Use demo mode
-                    showStatus('sisirStatus', 'Running SISIR demo analysis...', 'warning');
-                    const sisirResults = await window.neuricxDemo.analyzeSISIR(formData);
-                    
-                    showStatus('sisirStatus', 'SISIR demo analysis completed! Opening results...', 'success');
-                    
-                    // Store results for dashboard
-                    window.sisirResults = sisirResults;
-                    
-                    setTimeout(() => {
-                        closeModal('sisirModal');
-                        openDashboard('sisir');
-                    }, 2000);
-                    
-                } else {
-                    // Real SISIR API call with progress simulation
-                    const steps = [
-                        { progress: 10, message: 'Connecting to social media APIs...' },
-                        { progress: 25, message: 'Extracting profile data and engagement metrics...' },
-                        { progress: 40, message: 'Analyzing content sentiment and emotional patterns...' },
-                        { progress: 55, message: 'Correlating social signals with economic indicators...' },
-                        { progress: 70, message: 'Running viral content prediction models...' },
-                        { progress: 85, message: 'Generating growth optimization strategies...' },
-                        { progress: 95, message: 'Compiling comprehensive analysis report...' }
-                    ];
+                // Real SISIR API call with progress simulation
+                const steps = [
+                    { progress: 10, message: 'Connecting to social media APIs...' },
+                    { progress: 25, message: 'Extracting profile data and engagement metrics...' },
+                    { progress: 40, message: 'Analyzing content sentiment and emotional patterns...' },
+                    { progress: 55, message: 'Correlating social signals with economic indicators...' },
+                    { progress: 70, message: 'Running viral content prediction models...' },
+                    { progress: 85, message: 'Generating growth optimization strategies...' },
+                    { progress: 95, message: 'Compiling comprehensive analysis report...' }
+                ];
 
-                    // Simulate progress
-                    for (const step of steps) {
-                        updateProgress('sisirProgressBar', step.progress);
-                        showStatus('sisirStatus', step.message, 'warning');
-                        await new Promise(resolve => setTimeout(resolve, 1200));
-                    }
-
-                    // Make actual API call
-                    updateProgress('sisirProgressBar', 100);
-                    showStatus('sisirStatus', 'Finalizing SISIR analysis...', 'warning');
-                    
-                    const response = await fetch(`${API_BASE}/sisir/analyze`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(formData)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`SISIR API failed: ${response.status} ${response.statusText}`);
-                    }
-
-                    const sisirResults = await response.json();
-                    
-                    showStatus('sisirStatus', 'SISIR analysis completed successfully! Opening dashboard...', 'success');
-                    
-                    // Store results for dashboard
-                    window.sisirResults = sisirResults;
-                    
-                    // Update system stats
-                    systemStats.totalAgents += 100; // Simulated social agents
-                    updateStats();
-                    
-                    setTimeout(() => {
-                        closeModal('sisirModal');
-                        openDashboard('sisir');
-                    }, 2000);
+                // Simulate progress
+                for (const step of steps) {
+                    updateProgress('sisirProgressBar', step.progress);
+                    showStatus('sisirStatus', step.message, 'warning');
+                    await new Promise(resolve => setTimeout(resolve, 1200));
                 }
+
+                // Make actual API call
+                updateProgress('sisirProgressBar', 100);
+                showStatus('sisirStatus', 'Finalizing SISIR analysis...', 'warning');
+                
+                const response = await fetch(`${API_BASE}/sisir/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`SISIR API failed: ${response.status} ${response.statusText}`);
+                }
+
+                const sisirResults = await response.json();
+                
+                showStatus('sisirStatus', 'SISIR analysis completed successfully! Opening dashboard...', 'success');
+                
+                // Store results for dashboard
+                window.sisirResults = sisirResults;
+                
+                // Update system stats
+                systemStats.totalAgents += 100; // Simulated social agents
+                updateStats();
+                
+                setTimeout(() => {
+                    closeModal('sisirModal');
+                    openDashboard('sisir');
+                }, 2000);
                 
             } catch (error) {
                 showStatus('sisirStatus', 'SISIR analysis failed: ' + error.message, 'error');
@@ -3365,20 +3324,13 @@
             showProgress('policyProgress', 'policyProgressBar');
             
             try {
-                const isGitHubPages = window.location.hostname.includes('github.io');
-                let results;
-                
-                if (isGitHubPages && window.neuricxDemo) {
-                    results = await window.neuricxDemo.runPolicyAnalysis(formData);
-                } else {
-                    // API call for local development
-                    const response = await fetch(`${API_BASE}/policy/analyze`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    });
-                    results = await response.json();
-                }
+                // API call for policy analysis
+                const response = await fetch(`${API_BASE}/policy/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const results = await response.json();
                 
                 // Store results globally
                 window.policyResults = results;
@@ -3407,19 +3359,13 @@
             showProgress('crisisProgress', 'crisisProgressBar');
             
             try {
-                const isGitHubPages = window.location.hostname.includes('github.io');
-                let results;
-                
-                if (isGitHubPages && window.neuricxDemo) {
-                    results = await window.neuricxDemo.runCrisisPrediction(formData);
-                } else {
-                    const response = await fetch(`${API_BASE}/crisis/predict`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    });
-                    results = await response.json();
-                }
+                // API call for crisis prediction
+                const response = await fetch(`${API_BASE}/crisis/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const results = await response.json();
                 
                 // Store results globally
                 window.crisisResults = results;
@@ -3450,22 +3396,17 @@
             showProgress('quantumProgress', 'quantumProgressBar');
             
             try {
-                const isGitHubPages = window.location.hostname.includes('github.io');
-                let results;
-                
-                if (isGitHubPages && window.neuricxDemo) {
-                    results = await window.neuricxDemo.runQuantumComputation(formData);
-                } else {
-                    const response = await fetch(`${API_BASE}/quantum/run`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    });
-                    results = await response.json();
-                }
+                // API call for quantum computation
+                const response = await fetch(`${API_BASE}/quantum/run`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const results = await response.json();
                 
                 // Store results globally
                 window.quantumResults = results;
+                console.log('Storing quantum results:', results); // Debug log
                 
                 showStatus('quantumStatus', 'Quantum computation completed! Opening results...', 'success');
                 
@@ -3502,19 +3443,13 @@
             showProgress('mlProgress', 'mlProgressBar');
             
             try {
-                const isGitHubPages = window.location.hostname.includes('github.io');
-                let results;
-                
-                if (isGitHubPages && window.neuricxDemo) {
-                    results = await window.neuricxDemo.trainMLEnsemble(formData);
-                } else {
-                    const response = await fetch(`${API_BASE}/ml/train`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    });
-                    results = await response.json();
-                }
+                // API call for ML ensemble training
+                const response = await fetch(`${API_BASE}/ml/train`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const results = await response.json();
                 
                 // Store results globally
                 window.mlResults = results;

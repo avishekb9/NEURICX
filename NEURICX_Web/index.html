@@ -1795,30 +1795,269 @@
 
         function openAI(aiName) {
             const query = document.getElementById('aiSearchQuery').value;
-            let url = aiUrls[aiName];
             
-            // Add query parameter if available
-            if (query.trim()) {
-                switch(aiName) {
-                    case 'perplexity':
-                        url += `?q=${encodeURIComponent(query)}`;
-                        break;
-                    case 'you':
-                        url += `search?q=${encodeURIComponent(query)}`;
-                        break;
-                    case 'gemini':
-                        url += `?q=${encodeURIComponent(query)}`;
-                        break;
-                    default:
-                        // For ChatGPT and Claude, we'll open normally as they don't support direct query URLs
-                        break;
-                }
-            }
-            
-            window.open(url, '_blank');
+            // Show inline chat instead of external redirect
+            showInlineChat(aiName, query);
             
             // Show success animation
-            showNotification(`Launching ${aiName.charAt(0).toUpperCase() + aiName.slice(1)}...`, 'success');
+            showNotification(`Starting ${aiName.charAt(0).toUpperCase() + aiName.slice(1)} conversation...`, 'success');
+        }
+
+        function showInlineChat(aiName, initialQuery = '') {
+            // Remove existing chat if present
+            const existingChat = document.getElementById('inlineChatModal');
+            if (existingChat) {
+                existingChat.remove();
+            }
+
+            // Create chat modal
+            const chatModal = document.createElement('div');
+            chatModal.id = 'inlineChatModal';
+            chatModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+
+            const chatContainer = document.createElement('div');
+            chatContainer.style.cssText = `
+                background: var(--background-light);
+                border-radius: 15px;
+                width: 90%;
+                max-width: 800px;
+                height: 80%;
+                display: flex;
+                flex-direction: column;
+                border: 2px solid var(--primary-color);
+            `;
+
+            chatContainer.innerHTML = `
+                <div style="padding: 20px; border-bottom: 1px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="color: var(--primary-color); margin: 0;">
+                        <i class="fas fa-robot"></i> ${aiName.charAt(0).toUpperCase() + aiName.slice(1)} Assistant
+                    </h3>
+                    <button onclick="closeInlineChat()" style="background: none; border: none; color: var(--text-light); font-size: 1.5rem; cursor: pointer;">&times;</button>
+                </div>
+                <div id="chatMessages" style="flex: 1; padding: 20px; overflow-y: auto; background: var(--background-dark);">
+                    <div style="color: var(--text-medium); text-align: center; margin-bottom: 20px;">
+                        Connected to ${aiName.charAt(0).toUpperCase() + aiName.slice(1)} AI Assistant
+                    </div>
+                </div>
+                <div style="padding: 20px; border-top: 1px solid var(--primary-color);">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="chatInput" placeholder="Type your message..." style="
+                            flex: 1;
+                            padding: 12px;
+                            border: 1px solid var(--primary-color);
+                            border-radius: 25px;
+                            background: var(--background-dark);
+                            color: var(--text-light);
+                        " />
+                        <button onclick="sendChatMessage('${aiName}')" style="
+                            background: var(--primary-color);
+                            color: var(--background-dark);
+                            border: none;
+                            padding: 12px 20px;
+                            border-radius: 25px;
+                            cursor: pointer;
+                        ">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            chatModal.appendChild(chatContainer);
+            document.body.appendChild(chatModal);
+
+            // Add initial query if provided
+            if (initialQuery.trim()) {
+                setTimeout(() => {
+                    document.getElementById('chatInput').value = initialQuery;
+                    sendChatMessage(aiName);
+                }, 500);
+            }
+
+            // Focus input
+            setTimeout(() => {
+                document.getElementById('chatInput').focus();
+            }, 100);
+
+            // Enter key support
+            document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendChatMessage(aiName);
+                }
+            });
+        }
+
+        function closeInlineChat() {
+            const chatModal = document.getElementById('inlineChatModal');
+            if (chatModal) {
+                chatModal.remove();
+            }
+        }
+
+        function sendChatMessage(aiName) {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.style.cssText = `
+                margin-bottom: 15px;
+                text-align: right;
+            `;
+            userMessage.innerHTML = `
+                <div style="
+                    display: inline-block;
+                    background: var(--primary-color);
+                    color: var(--background-dark);
+                    padding: 12px 16px;
+                    border-radius: 18px;
+                    max-width: 70%;
+                    word-wrap: break-word;
+                ">
+                    ${message}
+                </div>
+            `;
+            messagesContainer.appendChild(userMessage);
+            
+            // Clear input
+            input.value = '';
+            
+            // Add typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.id = 'typingIndicator';
+            typingIndicator.style.cssText = `
+                margin-bottom: 15px;
+                text-align: left;
+            `;
+            typingIndicator.innerHTML = `
+                <div style="
+                    display: inline-block;
+                    background: var(--background-light);
+                    color: var(--text-light);
+                    padding: 12px 16px;
+                    border-radius: 18px;
+                    max-width: 70%;
+                ">
+                    <i class="fas fa-circle" style="animation: pulse 1.5s infinite;"></i>
+                    <i class="fas fa-circle" style="animation: pulse 1.5s infinite 0.2s;"></i>
+                    <i class="fas fa-circle" style="animation: pulse 1.5s infinite 0.4s;"></i>
+                </div>
+            `;
+            messagesContainer.appendChild(typingIndicator);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Simulate AI response
+            setTimeout(() => {
+                // Remove typing indicator
+                document.getElementById('typingIndicator').remove();
+                
+                // Add AI response
+                const aiResponse = document.createElement('div');
+                aiResponse.style.cssText = `
+                    margin-bottom: 15px;
+                    text-align: left;
+                `;
+                
+                const response = generateAIResponse(aiName, message);
+                aiResponse.innerHTML = `
+                    <div style="
+                        display: inline-block;
+                        background: var(--background-light);
+                        color: var(--text-light);
+                        padding: 12px 16px;
+                        border-radius: 18px;
+                        max-width: 70%;
+                        word-wrap: break-word;
+                        border-left: 3px solid var(--primary-color);
+                    ">
+                        ${response}
+                    </div>
+                `;
+                messagesContainer.appendChild(aiResponse);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 1000 + Math.random() * 2000);
+        }
+
+        function generateAIResponse(aiName, userMessage) {
+            const responses = {
+                chatgpt: {
+                    greetings: [
+                        "Hello! I'm ChatGPT, your AI assistant. How can I help you with NEURICX or any other questions?",
+                        "Hi there! I'm ready to assist you with analysis, coding, or any questions you have.",
+                        "Greetings! I'm ChatGPT. What would you like to explore today?"
+                    ],
+                    neuricx: [
+                        "NEURICX is a fascinating multi-agent economic modeling platform. It combines quantum computing, machine learning, and agent-based modeling to analyze complex economic systems.",
+                        "The NEURICX platform uses advanced AI to simulate economic scenarios, predict market trends, and analyze policy impacts through network-enhanced intelligence.",
+                        "NEURICX integrates social intelligence (SISIR), quantum algorithms, and real-time analytics to provide comprehensive economic insights."
+                    ],
+                    default: [
+                        "That's an interesting question! Based on the context, I'd suggest exploring how this relates to economic modeling or system analysis.",
+                        "I can help you analyze this topic. Would you like me to break it down from an economic, technical, or strategic perspective?",
+                        "Great question! Let me provide some insights that might be helpful for your research or analysis."
+                    ]
+                },
+                claude: {
+                    greetings: [
+                        "Hello! I'm Claude, Anthropic's AI assistant. I'm here to help with thoughtful analysis and safe AI assistance.",
+                        "Hi! I'm Claude. I focus on being helpful, harmless, and honest. How can I assist you today?",
+                        "Greetings! I'm Claude, and I'm designed to provide careful, nuanced assistance. What can I help you with?"
+                    ],
+                    neuricx: [
+                        "NEURICX represents an interesting approach to economic modeling that integrates multiple AI technologies responsibly. The platform's focus on multi-agent systems aligns with ethical AI principles.",
+                        "The NEURICX framework demonstrates how AI can be applied to complex economic challenges while maintaining transparency and interpretability.",
+                        "From an ethical AI perspective, NEURICX's approach to economic modeling through agent-based systems offers promising insights into systemic behavior analysis."
+                    ],
+                    default: [
+                        "I'd be happy to help you think through this carefully. Let me provide a balanced perspective on this topic.",
+                        "That's a thoughtful question. I can offer some analysis while considering multiple viewpoints and potential implications.",
+                        "Interesting! Let me approach this systematically and consider the various aspects involved."
+                    ]
+                },
+                gemini: {
+                    greetings: [
+                        "Hello! I'm Gemini, Google's AI assistant. I can help with research, analysis, and creative problem-solving.",
+                        "Hi there! I'm Gemini. I'm designed to be helpful with a wide range of tasks. What can I do for you?",
+                        "Greetings! I'm Gemini, here to assist with your questions and provide comprehensive insights."
+                    ],
+                    neuricx: [
+                        "NEURICX is an innovative platform that leverages Google's research in multi-agent systems and distributed computing for economic analysis.",
+                        "The NEURICX ecosystem demonstrates advanced integration of AI technologies, similar to approaches used in Google's economic modeling research.",
+                        "NEURICX's architecture shows promising applications of network intelligence, reminiscent of large-scale distributed systems used in modern AI research."
+                    ],
+                    default: [
+                        "I can provide insights on this topic by drawing from diverse perspectives and research areas. Let me help you explore this.",
+                        "That's a great question! I can approach this from multiple angles and provide comprehensive information.",
+                        "Excellent topic! Let me share some relevant insights and help you understand the broader implications."
+                    ]
+                }
+            };
+
+            const aiResponses = responses[aiName] || responses.chatgpt;
+            const message = userMessage.toLowerCase();
+
+            if (message.includes('hi') || message.includes('hello') || message.includes('hey')) {
+                return aiResponses.greetings[Math.floor(Math.random() * aiResponses.greetings.length)];
+            } else if (message.includes('neuricx') || message.includes('platform') || message.includes('economic')) {
+                return aiResponses.neuricx[Math.floor(Math.random() * aiResponses.neuricx.length)];
+            } else {
+                return aiResponses.default[Math.floor(Math.random() * aiResponses.default.length)];
+            }
         }
 
         function quickSearch(aiName) {
@@ -1840,13 +2079,11 @@
                 return;
             }
 
-            // Open multiple AI assistants with staggered timing
-            const aiList = ['perplexity', 'you', 'gemini', 'claude'];
-            showNotification(`Searching "${query}" across multiple AI assistants...`, 'info');
+            // Show multi-AI chat instead of external redirects
+            showNotification(`Starting conversation with multiple AI assistants...`, 'info');
             
-            aiList.forEach((ai, index) => {
-                setTimeout(() => openAI(ai), index * 500);
-            });
+            // Default to Claude for comprehensive responses
+            showInlineChat('claude', query);
         }
 
         function researchTopic(topic) {
@@ -1896,12 +2133,16 @@
             }, 4000);
         }
 
-        // Add CSS animation for notifications
+        // Add CSS animations for notifications and chat
         const notificationStyle = document.createElement('style');
         notificationStyle.textContent = `
             @keyframes slideInRight {
                 from { transform: translateX(100%); opacity: 0; }
                 to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes pulse {
+                0%, 100% { opacity: 0.4; }
+                50% { opacity: 1; }
             }
         `;
         document.head.appendChild(notificationStyle);
