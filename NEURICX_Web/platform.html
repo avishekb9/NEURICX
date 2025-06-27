@@ -527,6 +527,119 @@
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        /* Results Display Styling */
+        .results-container {
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+        
+        .policy-overview, .crisis-overview, .quantum-overview, .ml-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .impact-scores, .indicators {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .impact-item, .indicator-item {
+            display: grid;
+            grid-template-columns: 150px 1fr 80px;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            background: var(--background-light);
+            border-radius: 6px;
+        }
+        
+        .impact-bar, .indicator-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .impact-fill, .indicator-fill {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.5s ease;
+        }
+        
+        .indicator-fill.warning {
+            background: var(--warning-color);
+        }
+        
+        .indicator-fill.normal {
+            background: var(--success-color);
+        }
+        
+        .quantum-metrics, .ml-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: var(--background-light);
+            border-radius: 6px;
+        }
+        
+        .metric-row {
+            margin-bottom: 10px;
+        }
+        
+        .metric-bar {
+            width: 200px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 0 10px;
+        }
+        
+        .metric-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.5s ease;
+        }
+        
+        .model-list {
+            padding: 15px;
+            background: var(--background-light);
+            border-radius: 8px;
+        }
+        
+        .model-tag {
+            display: inline-block;
+            background: var(--primary-color);
+            color: var(--background-dark);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin: 0 5px 5px 0;
+        }
+        
+        .risk-low { color: var(--success-color); }
+        .risk-medium { color: var(--warning-color); }
+        .risk-high { color: var(--danger-color); }
+        
+        .results-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         /* SISIR Special Styling */
         .capability-card.sisir {
             border: 2px solid #e91e63;
@@ -1549,26 +1662,329 @@
         }
 
         function openDashboard(type) {
-            // Handle SISIR results display
-            if (type === 'sisir') {
-                showSISIRResults();
+            // Handle different result types
+            switch(type) {
+                case 'sisir':
+                    showSISIRResults();
+                    return;
+                case 'policy':
+                    showPolicyResults();
+                    return;
+                case 'crisis':
+                    showCrisisResults();
+                    return;
+                case 'quantum':
+                    showQuantumResults();
+                    return;
+                case 'ml':
+                    showMLResults();
+                    return;
+                default:
+                    // For other types, use existing dashboard URLs
+                    const dashboardUrls = {
+                        'simulation': '/dashboard.html',
+                        'realtime': '/dashboard.html#realtime',
+                        'monitoring': 'http://localhost:3001' // Grafana
+                    };
+                    
+                    const url = dashboardUrls[type];
+                    if (url) {
+                        window.open(url, '_blank');
+                    }
+            }
+        }
+
+        function showPolicyResults() {
+            const results = window.policyResults;
+            if (!results) {
+                alert('No policy analysis results available. Please run an analysis first.');
                 return;
             }
-            
-            const dashboardUrls = {
-                'simulation': '/dashboard.html',
-                'realtime': '/dashboard.html#realtime',
-                'policy': '/dashboard.html#policy',
-                'risk': '/dashboard.html#risk',
-                'quantum': '/dashboard.html#quantum',
-                'ml': '/dashboard.html#ml',
-                'monitoring': 'http://localhost:3001' // Grafana
-            };
-            
-            const url = dashboardUrls[type];
-            if (url) {
-                window.open(url, '_blank');
+
+            const modal = createModal('policyResultsModal', 'Policy Analysis Results', `
+                <div class="results-container">
+                    <div class="results-section">
+                        <h3><i class="fas fa-balance-scale"></i> Policy Impact Analysis</h3>
+                        <div class="policy-overview">
+                            <div class="stat-card">
+                                <div class="stat-number">${results.results.policy_type}</div>
+                                <div class="stat-label">Policy Type</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${results.results.intervention_magnitude}</div>
+                                <div class="stat-label">Intervention Magnitude</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${(results.results.network_transmission_effect * 100).toFixed(1)}%</div>
+                                <div class="stat-label">Network Transmission</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-section">
+                        <h3><i class="fas fa-chart-bar"></i> Agent Impact Scores</h3>
+                        <div class="impact-scores">
+                            ${Object.entries(results.results.agent_impact_scores).map(([agent, score]) => `
+                                <div class="impact-item">
+                                    <span class="agent-label">${agent.replace('_', ' ').toUpperCase()}:</span>
+                                    <div class="impact-bar">
+                                        <div class="impact-fill" style="width: ${(score * 50)}%"></div>
+                                    </div>
+                                    <span class="impact-value">${score.toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="results-actions">
+                        <button class="btn btn-primary" onclick="exportResults('policy')">
+                            <i class="fas fa-download"></i> Export Results
+                        </button>
+                        <button class="btn btn-secondary" onclick="closeModal('policyResultsModal')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `);
+
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
+        }
+
+        function showCrisisResults() {
+            const results = window.crisisResults;
+            if (!results) {
+                alert('No crisis prediction results available. Please run a prediction first.');
+                return;
             }
+
+            const modal = createModal('crisisResultsModal', 'Crisis Prediction Results', `
+                <div class="results-container">
+                    <div class="results-section">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Crisis Risk Assessment</h3>
+                        <div class="crisis-overview">
+                            <div class="stat-card primary">
+                                <div class="stat-number">${(results.results.crisis_probability * 100).toFixed(1)}%</div>
+                                <div class="stat-label">Crisis Probability</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number risk-${results.results.risk_level}">${results.results.risk_level.toUpperCase()}</div>
+                                <div class="stat-label">Risk Level</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${(results.results.predicted_severity * 100).toFixed(1)}%</div>
+                                <div class="stat-label">Predicted Severity</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${results.results.time_horizon}</div>
+                                <div class="stat-label">Days Horizon</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-section">
+                        <h3><i class="fas fa-chart-line"></i> Early Warning Indicators</h3>
+                        <div class="indicators">
+                            ${results.results.early_warning_indicators.map(indicator => `
+                                <div class="indicator-item">
+                                    <span class="indicator-label">${indicator.indicator.replace('_', ' ').toUpperCase()}:</span>
+                                    <div class="indicator-bar">
+                                        <div class="indicator-fill ${indicator.value > indicator.threshold ? 'warning' : 'normal'}" 
+                                             style="width: ${Math.abs(indicator.value) * 100}%"></div>
+                                    </div>
+                                    <span class="indicator-value">${indicator.value.toFixed(3)} (threshold: ${indicator.threshold})</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="results-actions">
+                        <button class="btn btn-primary" onclick="exportResults('crisis')">
+                            <i class="fas fa-download"></i> Export Results
+                        </button>
+                        <button class="btn btn-secondary" onclick="closeModal('crisisResultsModal')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `);
+
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
+        }
+
+        function showQuantumResults() {
+            const results = window.quantumResults;
+            if (!results) {
+                alert('No quantum computation results available. Please run a computation first.');
+                return;
+            }
+
+            const modal = createModal('quantumResultsModal', 'Quantum Computation Results', `
+                <div class="results-container">
+                    <div class="results-section">
+                        <h3><i class="fas fa-atom"></i> Quantum Algorithm Performance</h3>
+                        <div class="quantum-overview">
+                            <div class="stat-card">
+                                <div class="stat-number">${results.results.algorithm}</div>
+                                <div class="stat-label">Algorithm</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${results.results.backend}</div>
+                                <div class="stat-label">Backend</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${results.results.n_qubits}</div>
+                                <div class="stat-label">Qubits Used</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-section">
+                        <h3><i class="fas fa-chart-pie"></i> Performance Metrics</h3>
+                        <div class="quantum-metrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Quantum Advantage:</span>
+                                <span class="metric-value">${results.results.quantum_advantage.toFixed(2)}x</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Execution Time:</span>
+                                <span class="metric-value">${results.results.execution_time.toFixed(2)}s</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Fidelity:</span>
+                                <span class="metric-value">${(results.results.fidelity * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Cost Reduction:</span>
+                                <span class="metric-value">${(results.results.optimization_result.cost_reduction * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Solution Quality:</span>
+                                <span class="metric-value">${(results.results.optimization_result.solution_quality * 100).toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-actions">
+                        <button class="btn btn-primary" onclick="exportResults('quantum')">
+                            <i class="fas fa-download"></i> Export Results
+                        </button>
+                        <button class="btn btn-secondary" onclick="closeModal('quantumResultsModal')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `);
+
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
+        }
+
+        function showMLResults() {
+            const results = window.mlResults;
+            if (!results) {
+                alert('No ML training results available. Please run training first.');
+                return;
+            }
+
+            const modal = createModal('mlResultsModal', 'Machine Learning Results', `
+                <div class="results-container">
+                    <div class="results-section">
+                        <h3><i class="fas fa-brain"></i> ML Ensemble Performance</h3>
+                        <div class="ml-overview">
+                            <div class="stat-card">
+                                <div class="stat-number">${results.results.ensemble_method}</div>
+                                <div class="stat-label">Ensemble Method</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${results.results.models_trained.length}</div>
+                                <div class="stat-label">Models Trained</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-section">
+                        <h3><i class="fas fa-chart-bar"></i> Performance Metrics</h3>
+                        <div class="ml-metrics">
+                            <div class="metric-row">
+                                <div class="metric-item">
+                                    <span class="metric-label">Accuracy:</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill" style="width: ${results.results.accuracy * 100}%"></div>
+                                    </div>
+                                    <span class="metric-value">${(results.results.accuracy * 100).toFixed(1)}%</span>
+                                </div>
+                            </div>
+                            <div class="metric-row">
+                                <div class="metric-item">
+                                    <span class="metric-label">Precision:</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill" style="width: ${results.results.precision * 100}%"></div>
+                                    </div>
+                                    <span class="metric-value">${(results.results.precision * 100).toFixed(1)}%</span>
+                                </div>
+                            </div>
+                            <div class="metric-row">
+                                <div class="metric-item">
+                                    <span class="metric-label">Recall:</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill" style="width: ${results.results.recall * 100}%"></div>
+                                    </div>
+                                    <span class="metric-value">${(results.results.recall * 100).toFixed(1)}%</span>
+                                </div>
+                            </div>
+                            <div class="metric-row">
+                                <div class="metric-item">
+                                    <span class="metric-label">F1 Score:</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill" style="width: ${results.results.f1_score * 100}%"></div>
+                                    </div>
+                                    <span class="metric-value">${(results.results.f1_score * 100).toFixed(1)}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-section">
+                        <h3><i class="fas fa-cogs"></i> Model Details</h3>
+                        <div class="model-details">
+                            <div class="model-list">
+                                <strong>Trained Models:</strong>
+                                ${results.results.models_trained.map(model => `<span class="model-tag">${model.toUpperCase()}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-actions">
+                        <button class="btn btn-primary" onclick="exportResults('ml')">
+                            <i class="fas fa-download"></i> Export Results
+                        </button>
+                        <button class="btn btn-secondary" onclick="closeModal('mlResultsModal')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `);
+
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
+        }
+
+        function exportResults(type) {
+            const results = window[`${type}Results`];
+            if (!results) return;
+
+            const dataStr = JSON.stringify(results, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `neuricx-${type}-results-${Date.now()}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         function showSISIRResults() {
@@ -2388,10 +2804,10 @@
             
             try {
                 const isGitHubPages = window.location.hostname.includes('github.io');
+                let results;
                 
                 if (isGitHubPages && window.neuricxDemo) {
-                    const results = await window.neuricxDemo.runPolicyAnalysis(formData);
-                    showStatus('policyStatus', 'Policy analysis completed successfully!', 'success');
+                    results = await window.neuricxDemo.runPolicyAnalysis(formData);
                 } else {
                     // API call for local development
                     const response = await fetch(`${API_BASE}/policy/analyze`, {
@@ -2399,11 +2815,19 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(formData)
                     });
-                    const results = await response.json();
-                    showStatus('policyStatus', 'Policy analysis completed successfully!', 'success');
+                    results = await response.json();
                 }
                 
-                setTimeout(() => closeModal('policyModal'), 2000);
+                // Store results globally
+                window.policyResults = results;
+                
+                showStatus('policyStatus', 'Policy analysis completed! Opening results...', 'success');
+                
+                setTimeout(() => {
+                    closeModal('policyModal');
+                    openDashboard('policy');
+                }, 2000);
+                
             } catch (error) {
                 showStatus('policyStatus', 'Policy analysis failed: ' + error.message, 'error');
             }
@@ -2422,21 +2846,29 @@
             
             try {
                 const isGitHubPages = window.location.hostname.includes('github.io');
+                let results;
                 
                 if (isGitHubPages && window.neuricxDemo) {
-                    const results = await window.neuricxDemo.runCrisisPrediction(formData);
-                    showStatus('crisisStatus', 'Crisis prediction completed successfully!', 'success');
+                    results = await window.neuricxDemo.runCrisisPrediction(formData);
                 } else {
                     const response = await fetch(`${API_BASE}/crisis/predict`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(formData)
                     });
-                    const results = await response.json();
-                    showStatus('crisisStatus', 'Crisis prediction completed successfully!', 'success');
+                    results = await response.json();
                 }
                 
-                setTimeout(() => closeModal('crisisModal'), 2000);
+                // Store results globally
+                window.crisisResults = results;
+                
+                showStatus('crisisStatus', 'Crisis prediction completed! Opening results...', 'success');
+                
+                setTimeout(() => {
+                    closeModal('crisisModal');
+                    openDashboard('crisis');
+                }, 2000);
+                
             } catch (error) {
                 showStatus('crisisStatus', 'Crisis prediction failed: ' + error.message, 'error');
             }
@@ -2457,21 +2889,29 @@
             
             try {
                 const isGitHubPages = window.location.hostname.includes('github.io');
+                let results;
                 
                 if (isGitHubPages && window.neuricxDemo) {
-                    const results = await window.neuricxDemo.runQuantumComputation(formData);
-                    showStatus('quantumStatus', 'Quantum computation completed successfully!', 'success');
+                    results = await window.neuricxDemo.runQuantumComputation(formData);
                 } else {
                     const response = await fetch(`${API_BASE}/quantum/run`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(formData)
                     });
-                    const results = await response.json();
-                    showStatus('quantumStatus', 'Quantum computation completed successfully!', 'success');
+                    results = await response.json();
                 }
                 
-                setTimeout(() => closeModal('quantumModal'), 2000);
+                // Store results globally
+                window.quantumResults = results;
+                
+                showStatus('quantumStatus', 'Quantum computation completed! Opening results...', 'success');
+                
+                setTimeout(() => {
+                    closeModal('quantumModal');
+                    openDashboard('quantum');
+                }, 2000);
+                
             } catch (error) {
                 showStatus('quantumStatus', 'Quantum computation failed: ' + error.message, 'error');
             }
@@ -2501,21 +2941,29 @@
             
             try {
                 const isGitHubPages = window.location.hostname.includes('github.io');
+                let results;
                 
                 if (isGitHubPages && window.neuricxDemo) {
-                    const results = await window.neuricxDemo.trainMLEnsemble(formData);
-                    showStatus('mlStatus', 'ML ensemble training completed successfully!', 'success');
+                    results = await window.neuricxDemo.trainMLEnsemble(formData);
                 } else {
                     const response = await fetch(`${API_BASE}/ml/train`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(formData)
                     });
-                    const results = await response.json();
-                    showStatus('mlStatus', 'ML ensemble training completed successfully!', 'success');
+                    results = await response.json();
                 }
                 
-                setTimeout(() => closeModal('mlModal'), 2000);
+                // Store results globally
+                window.mlResults = results;
+                
+                showStatus('mlStatus', 'ML ensemble training completed! Opening results...', 'success');
+                
+                setTimeout(() => {
+                    closeModal('mlModal');
+                    openDashboard('ml');
+                }, 2000);
+                
             } catch (error) {
                 showStatus('mlStatus', 'ML ensemble training failed: ' + error.message, 'error');
             }
