@@ -4,6 +4,19 @@ from flask_cors import CORS
 import random
 import time
 import threading
+import sys
+import os
+
+# Add the R directory to Python path to import instagram_fetcher
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'R'))
+
+try:
+    from instagram_fetcher import InstagramFetcher
+    INSTAGRAM_AVAILABLE = True
+    print("✅ Instagram fetcher loaded successfully")
+except ImportError as e:
+    print(f"⚠️ Instagram fetcher not available: {e}")
+    INSTAGRAM_AVAILABLE = False
 
 app = Flask(__name__)
 CORS(app)
@@ -11,6 +24,21 @@ CORS(app)
 # Mock data storage
 simulations = {}
 jobs = {}
+
+def calculate_engagement_rate(profile):
+    """Calculate estimated engagement rate based on follower count"""
+    if not profile or profile.followers_count == 0:
+        return random.uniform(2.0, 5.0)
+    
+    # Typical engagement rates decrease as follower count increases
+    if profile.followers_count < 1000:
+        return random.uniform(8.0, 15.0)
+    elif profile.followers_count < 10000:
+        return random.uniform(4.0, 8.0)
+    elif profile.followers_count < 100000:
+        return random.uniform(2.0, 4.0)
+    else:
+        return random.uniform(1.0, 3.0)
 
 @app.route('/health')
 def health():
@@ -169,6 +197,8 @@ def run_quantum():
     return jsonify({
         "quantum_id": quantum_id,
         "algorithm": data.get('algorithm', 'portfolio'),
+        "backend": data.get('backend', 'qasm_simulator'),
+        "n_qubits": data.get('n_qubits', 4),
         "status": "completed",
         "results": {
             "quantum_advantage": random.uniform(1.1, 2.5),
@@ -208,14 +238,53 @@ def sisir_analyze():
     accounts = data.get('accounts', {})
     analysis_type = data.get('analysis_type', 'comprehensive')
     
-    # Generate realistic SISIR analysis results
-    profile_data = {
-        'follower_count': random.randint(5000, 50000),
-        'following_count': random.randint(500, 5000),
-        'post_count': random.randint(100, 2000),
-        'verified': random.choice([True, False]),
-        'engagement_rate': random.uniform(2.5, 8.5)
-    }
+    # Get real Instagram data if available
+    profile_data = {}
+    
+    if INSTAGRAM_AVAILABLE and 'instagram' in platforms:
+        try:
+            fetcher = InstagramFetcher()
+            instagram_handle = accounts.get('instagram', 'aegonsfx')  # Default to aegonsfx
+            
+            print(f"🔍 Fetching real data for Instagram @{instagram_handle}")
+            
+            profile = fetcher.fetch_profile_data(instagram_handle)
+            
+            if profile:
+                profile_data = {
+                    'follower_count': profile.followers_count,
+                    'following_count': profile.following_count,
+                    'post_count': profile.media_count,
+                    'verified': profile.is_verified,
+                    'engagement_rate': calculate_engagement_rate(profile),
+                    'username': profile.username,
+                    'full_name': profile.full_name,
+                    'biography': profile.biography,
+                    'is_private': profile.is_private
+                }
+                print(f"✅ Real data fetched for @{instagram_handle}: {profile.followers_count:,} followers")
+            else:
+                raise Exception("Profile fetch failed")
+                
+        except Exception as e:
+            print(f"❌ Real Instagram fetch failed: {e}")
+            # Fallback to mock data
+            profile_data = {
+                'follower_count': random.randint(5000, 50000),
+                'following_count': random.randint(500, 5000),
+                'post_count': random.randint(100, 2000),
+                'verified': random.choice([True, False]),
+                'engagement_rate': random.uniform(2.5, 8.5)
+            }
+    else:
+        # Fallback to mock data if Instagram fetcher not available
+        profile_data = {
+            'follower_count': random.randint(5000, 50000),
+            'following_count': random.randint(500, 5000),
+            'post_count': random.randint(100, 2000),
+            'verified': random.choice([True, False]),
+            'engagement_rate': random.uniform(2.5, 8.5)
+        }
     
     economic_impact = {
         'overall_score': random.uniform(65, 95),
