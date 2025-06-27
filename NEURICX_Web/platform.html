@@ -1884,10 +1884,13 @@
                 case 'simulation':
                     showSimulationResults();
                     return;
+                case 'monitoring':
+                    showMonitoringResults();
+                    return;
                 default:
                     // For other types, use existing dashboard URLs
                     const dashboardUrls = {
-                        'monitoring': 'http://localhost:3001' // Grafana
+                        'analytics': 'http://localhost:3001' // Grafana (if needed)
                     };
                     
                     const url = dashboardUrls[type];
@@ -1895,6 +1898,151 @@
                         window.open(url, '_blank');
                     }
             }
+        }
+
+        function showMonitoringResults() {
+            const modal = createModal('monitoringModal', 'System Monitoring Dashboard', `
+                <div class="results-container">
+                    <div class="results-section">
+                        <h3><i class="fas fa-chart-line"></i> Real-Time System Metrics</h3>
+                        <div class="monitoring-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-microchip"></i></div>
+                                <div class="metric-info">
+                                    <div class="metric-value">87%</div>
+                                    <div class="metric-label">CPU Usage</div>
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-memory"></i></div>
+                                <div class="metric-info">
+                                    <div class="metric-value">64%</div>
+                                    <div class="metric-label">Memory Usage</div>
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-network-wired"></i></div>
+                                <div class="metric-info">
+                                    <div class="metric-value">1.2GB/s</div>
+                                    <div class="metric-label">Network I/O</div>
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-database"></i></div>
+                                <div class="metric-info">
+                                    <div class="metric-value">342ms</div>
+                                    <div class="metric-label">DB Response</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="results-section">
+                        <h3><i class="fas fa-server"></i> Service Health Status</h3>
+                        <div class="service-grid">
+                            <div class="service-item status-online">
+                                <i class="fas fa-check-circle"></i>
+                                <span>API Gateway</span>
+                                <span class="status-badge">Healthy</span>
+                            </div>
+                            <div class="service-item status-online">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Quantum Engine</span>
+                                <span class="status-badge">Healthy</span>
+                            </div>
+                            <div class="service-item status-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>ML Pipeline</span>
+                                <span class="status-badge">Warning</span>
+                            </div>
+                            <div class="service-item status-online">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Data Storage</span>
+                                <span class="status-badge">Healthy</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="results-actions">
+                        <button class="btn btn-primary" onclick="window.open('http://localhost:3001', '_blank')">
+                            <i class="fas fa-external-link-alt"></i> Open Grafana
+                        </button>
+                        <button class="btn btn-secondary" onclick="closeModal('monitoringModal')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `);
+            
+            // Add monitoring-specific styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .monitoring-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 1rem;
+                    margin: 1rem 0;
+                }
+                .metric-card {
+                    background: var(--background-light);
+                    padding: 1.5rem;
+                    border-radius: 8px;
+                    border: 1px solid var(--primary-color)30;
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+                .metric-icon {
+                    font-size: 2rem;
+                    color: var(--primary-color);
+                }
+                .metric-value {
+                    font-size: 1.5rem;
+                    font-weight: bold;
+                    color: var(--primary-color);
+                }
+                .metric-label {
+                    color: var(--text-medium);
+                    font-size: 0.9rem;
+                }
+                .service-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                }
+                .service-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    padding: 1rem;
+                    background: var(--background-light);
+                    border-radius: 8px;
+                    border-left: 4px solid var(--success-color);
+                }
+                .service-item.status-warning {
+                    border-left-color: var(--warning-color);
+                }
+                .service-item.status-warning i {
+                    color: var(--warning-color);
+                }
+                .service-item.status-online i {
+                    color: var(--success-color);
+                }
+                .status-badge {
+                    margin-left: auto;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 12px;
+                    font-size: 0.8rem;
+                    background: var(--success-color)30;
+                    color: var(--success-color);
+                }
+                .service-item.status-warning .status-badge {
+                    background: var(--warning-color)30;
+                    color: var(--warning-color);
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
         }
 
         function showPolicyResults() {
@@ -2030,15 +2178,15 @@
                         <h3><i class="fas fa-atom"></i> Quantum Algorithm Performance</h3>
                         <div class="quantum-overview">
                             <div class="stat-card">
-                                <div class="stat-number">${results.algorithm}</div>
+                                <div class="stat-number">${results.algorithm || 'N/A'}</div>
                                 <div class="stat-label">Algorithm</div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-number">${results.backend}</div>
+                                <div class="stat-number">${results.backend || 'N/A'}</div>
                                 <div class="stat-label">Backend</div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-number">${results.n_qubits}</div>
+                                <div class="stat-number">${results.n_qubits || 'N/A'}</div>
                                 <div class="stat-label">Qubits Used</div>
                             </div>
                         </div>
@@ -3407,6 +3555,9 @@
                 // Store results globally
                 window.quantumResults = results;
                 console.log('Storing quantum results:', results); // Debug log
+                
+                // Temporary debug alert to see what data we're getting
+                alert(`Debug: Quantum API returned - Algorithm: ${results.algorithm}, Backend: ${results.backend}, Qubits: ${results.n_qubits}`);
                 
                 showStatus('quantumStatus', 'Quantum computation completed! Opening results...', 'success');
                 
