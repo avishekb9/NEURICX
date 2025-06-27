@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neuricx-api
+  namespace: neuricx
+  labels:
+    app: neuricx-api
+    component: backend
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: neuricx-api
+  template:
+    metadata:
+      labels:
+        app: neuricx-api
+        component: backend
+    spec:
+      containers:
+      - name: neuricx-api
+        image: neuricx/api:latest
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: R_LIBS_USER
+          value: "/usr/local/lib/R/site-library"
+        - name: NEURICX_ENV
+          value: "production"
+        - name: REDIS_URL
+          value: "redis://redis-service:6379"
+        - name: POSTGRES_URL
+          valueFrom:
+            secretKeyRef:
+              name: neuricx-secrets
+              key: postgres-url
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: neuricx-logs
+          mountPath: /app/logs
+        - name: neuricx-data
+          mountPath: /app/data
+      volumes:
+      - name: neuricx-logs
+        persistentVolumeClaim:
+          claimName: neuricx-logs-pvc
+      - name: neuricx-data
+        persistentVolumeClaim:
+          claimName: neuricx-data-pvc
+      imagePullSecrets:
+      - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: neuricx-api-service
+  namespace: neuricx
+  labels:
+    app: neuricx-api
+spec:
+  selector:
+    app: neuricx-api
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: neuricx-api-hpa
+  namespace: neuricx
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: neuricx-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

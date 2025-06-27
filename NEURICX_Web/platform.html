@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEURICX Platform | Launch Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="additional-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js"></script>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #00d4ff;
+            --secondary-color: #0099cc;
+            --accent-color: #ff6b35;
+            --background-dark: #0a0e1a;
+            --background-medium: #1a1f2e;
+            --background-light: #2a3142;
+            --text-light: #e0e6ed;
+            --text-medium: #b8c1cc;
+            --success-color: #00ff88;
+            --warning-color: #ffaa00;
+            --danger-color: #ff4757;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: var(--background-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--primary-color);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            background: var(--background-light);
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-online { background: var(--success-color); }
+        .status-offline { background: var(--danger-color); }
+        .status-warning { background: var(--warning-color); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 20px;
+        }
+
+        /* Platform Overview */
+        .platform-overview {
+            background: var(--background-medium);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--primary-color);
+        }
+
+        .platform-overview h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .platform-overview p {
+            font-size: 1.1rem;
+            color: var(--text-medium);
+            margin-bottom: 2rem;
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--background-light);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--secondary-color);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: var(--text-medium);
+            font-size: 0.9rem;
+        }
+
+        /* Capability Sections */
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .capability-card {
+            background: var(--background-medium);
+            border-radius: 15px;
+            border: 1px solid var(--secondary-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .capability-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .capability-header {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            padding: 1.5rem;
+            color: var(--background-dark);
+        }
+
+        .capability-header h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .capability-content {
+            padding: 1.5rem;
+        }
+
+        .capability-description {
+            color: var(--text-medium);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .capability-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .capability-features li {
+            padding: 0.3rem 0;
+            color: var(--text-light);
+        }
+
+        .capability-features li::before {
+            content: '✓';
+            color: var(--success-color);
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .capability-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--background-dark);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: var(--background-dark);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: var(--background-dark);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: var(--background-medium);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--primary-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .close {
+            color: var(--text-medium);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: var(--danger-color);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--secondary-color);
+            border-radius: 8px;
+            background: var(--background-light);
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Status Messages */
+        .status-message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .status-success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .status-error {
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .status-warning {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid var(--warning-color);
+            color: var(--warning-color);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: var(--background-light);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--background-dark);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .capabilities-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .platform-overview h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--background-light);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <a href="#" class="logo">
+                <i class="fas fa-network-wired"></i>
+                NEURICX Platform
+            </a>
+            <div class="system-status">
+                <div class="status-indicator">
+                    <div class="status-dot status-online" id="api-status"></div>
+                    <span>API</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot status-offline" id="streaming-status"></div>
+                    <span>Streaming</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot status-offline" id="quantum-status"></div>
+                    <span>Quantum</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Platform Overview -->
+        <section class="platform-overview">
+            <h1>NEURICX Control Hub</h1>
+            <p>Launch and manage all NEURICX capabilities from this unified platform. Monitor real-time performance, deploy infrastructure, and access advanced economic modeling tools.</p>
+            
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="active-simulations">0</div>
+                    <div class="stat-label">Active Simulations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-agents">0</div>
+                    <div class="stat-label">Total Agents</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="quantum-jobs">0</div>
+                    <div class="stat-label">Quantum Jobs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="uptime">0h</div>
+                    <div class="stat-label">System Uptime</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Capabilities Grid -->
+        <div class="capabilities-grid">
+            <!-- Infrastructure Management -->
+            <div class="capability-card">
+                <div class="capability-header">
+                    <h3><i class="fas fa-server"></i> Infrastructure Management</h3>
+                    <p>Deploy and manage NEURICX infrastructure</p>
+                </div>
+                <div class="capability-content">
+                    <div class="capability-description">
+                        Launch Docker containers, Kubernetes clusters, and cloud infrastructure. Monitor system health and scale resources automatically.
+                    </div>
+                    <ul class="capability-features">
+                        <li>Docker containerization</li>
+                        <li>Kubernetes orchestration</li>
+                        <li>Multi-cloud deployment</li>
+                        <li>Auto-scaling capabilities</li>
+                        <li>Health monitoring</li>
+                    </ul>
+                    <div class="capability-actions">
+                        <button class="btn btn-primary" onclick="showInfrastructureModal()">
+                            <i class="fas fa-rocket"></i> Deploy Infrastructure
+                        </button>
+                        <button class="btn btn-secondary" onclick="showSystemStatus()">
+                            <i class="fas fa-chart-line"></i> System Status
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Economic Simulation -->
+            <div class="capability-card">
+                <div class="capability-header">
+                    <h3><i class="fas fa-brain"></i> Economic Simulation</h3>
+                    <p>Advanced multi-agent economic modeling</p>
+                </div>
+                <div class="capability-content">
+                    <div class="capability-description">
+                        Create and run complex economic simulations with heterogeneous agents, multi-layer networks, and collective intelligence modeling.
+                    </div>
+                    <ul class="capability-features">
+                        <li>Six agent types with adaptive learning</li>
+                        <li>Multi-layer network evolution</li>
+                        <li>Collective intelligence tracking</li>
+                        <li>Real-time visualization</li>
+                        <li>Performance benchmarking</li>
+                    </ul>
+                    <div class="capability-actions">
+                        <button class="btn btn-primary" onclick="showSimulationModal()">
+                            <i class="fas fa-play"></i> Start Simulation
+                        </button>
+                        <button class="btn btn-secondary" onclick="openDashboard('simulation')">
+                            <i class="fas fa-dashboard"></i> View Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Analytics -->
+            <div class="capability-card">
+                <div class="capability-header">
+                    <h3><i class="fas fa-stream"></i> Real-time Analytics</h3>
+                    <p>Live market data and streaming analysis</p>
+                </div>
+                <div class="capability-content">
+                    <div class="capability-description">
+                        Stream real-time market data, perform live analytics, and monitor economic indicators with interactive dashboards and alerts.
+                    </div>
+                    <ul class="capability-features">
+                        <li>Multi-source data streaming</li>
+                        <li>Real-time analytics engine</li>
+                        <li>Interactive dashboards</li>
+                        <li>Custom alert system</li>
+                        <li>WebSocket integration</li>
+                    </ul>
+                    <div class="capability-actions">
+                        <button class="btn btn-primary" onclick="showStreamingModal()">
+                            <i class="fas fa-satellite-dish"></i> Start Streaming
+                        </button>
+                        <button class="btn btn-secondary" onclick="openDashboard('realtime')">
+                            <i class="fas fa-chart-area"></i> Live Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Policy Analysis -->
+            <div class="capability-card">
+                <div class="capability-header">
+                    <h3><i class="fas fa-balance-scale"></i> Policy Analysis</h3>
+                    <p>Comprehensive policy intervention modeling</p>
+                </div>
+                <div class="capability-content">
+                    <div class="capability-description">
+                        Analyze monetary, fiscal, regulatory, and technology policies. Simulate interventions and assess network transmission effects.
+                    </div>
+                    <ul class="capability-features">
+                        <li>Monetary policy simulation</li>
+                        <li>Fiscal policy analysis</li>
+                        <li>Regulatory impact assessment</li>
+                        <li>Technology policy modeling</li>
+                        <li>Network transmission analysis</li>
+                    </ul>
+                    <div class="capability-actions">
+                        <button class="btn btn-primary" onclick="showPolicyModal()">
+                            <i class="fas fa-gavel"></i> Run Analysis
+                        </button>
+                        <button class="btn btn-secondary" onclick="openDashboard('policy')">
+                            <i class="fas fa-file-contract"></i> Policy Reports
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crisis Prediction -->
+            <div class="capability-card">
+                <div class="capability-header">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Crisis Prediction</h3>
+                    <p>Early warning and systemic risk assessment</p>
+                </div>
+                <div class="capability-content">
+                    <div class="capability-description">
+                        Predict economic crises using ensemble ML models, assess systemic risks, and monitor early warning indicators with real-time alerts.
+                    </div>
+                    <ul class="capability-features">
+                        <li>Ensemble crisis prediction</li>
+                        <li>Systemic risk assessment</li>
+                        <li>Early warning signals</li>
+                        <li>Contagion analysis</li>
+                        <li>Real-time monitoring</li>
+                    </ul>
+                    <div class="capability-actions">
+                        <button class="btn btn-warning" onclick="showCrisisModal()">
+                            <i class="fas fa-search"></i> Predict Crisis
+                        </button>
+                        <button class="btn btn-secondary" onclick="openDashboard('risk')">
+                            <i class="fas fa-shield-alt"></i> Risk Monitor
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quantum Computing -->
+            <div class="capability-card">
+                <div class="capability-header">
+                    <h3><i class="fas fa-atom"></i> Quantum Computing</h3>
+                    <p>Quantum-enhanced optimization algorithms</p>
+                </div>
+                <div class="capability-content">
+                    <div class="capability-description">
+                        Leverage quantum computing for portfolio optimization, network analysis, and machine learning with support for multiple quantum backends.
+                    </div>
+                    <ul class="capability-features">
+                        <li>QAOA portfolio optimization</li>
+                        <li>Quantum network analysis</li>
+                        <li>Quantum machine learning</li>
+                        <li>Multi-backend support</li>
+                        <li>Hybrid algorithms</li>
+                    </ul>
+                    <div class="capability-actions">
+                        <button class="btn btn-primary" onclick="showQuantumModal()">
+                            <i class="fas fa-magic"></i> Run Quantum
+                        </button>
+                        <button class="btn btn-secondary" onclick="openDashboard('quantum')">
+                            <i class="fas fa-microscope"></i> Quantum Lab
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Machine Learning -->
+            <div class="capability-card">
+                <div class="capability-header">
+                    <h3><i class="fas fa-robot"></i> Machine Learning</h3>
+                    <p>Advanced ML ensemble methods</p>
+                </div>
+                <div class="capability-content">
+                    <div class="capability-description">
+                        Deploy ensemble machine learning models for economic prediction, feature engineering, and automated model selection with comprehensive evaluation.
+                    </div>
+                    <ul class="capability-features">
+                        <li>Neural networks & deep learning</li>
+                        <li>Ensemble methods</li>
+                        <li>Automated model selection</li>
+                        <li>Feature engineering</li>
+                        <li>Performance benchmarking</li>
+                    </ul>
+                    <div class="capability-actions">
+                        <button class="btn btn-primary" onclick="showMLModal()">
+                            <i class="fas fa-cogs"></i> Train Models
+                        </button>
+                        <button class="btn btn-secondary" onclick="openDashboard('ml')">
+                            <i class="fas fa-chart-bar"></i> ML Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitoring & Analytics -->
+            <div class="capability-card">
+                <div class="capability-header">
+                    <h3><i class="fas fa-tachometer-alt"></i> Monitoring & Analytics</h3>
+                    <p>System monitoring and observability</p>
+                </div>
+                <div class="capability-content">
+                    <div class="capability-description">
+                        Monitor system performance, track metrics, set up alerts, and analyze system behavior with comprehensive observability tools.
+                    </div>
+                    <ul class="capability-features">
+                        <li>Prometheus metrics</li>
+                        <li>Grafana dashboards</li>
+                        <li>Custom alerts</li>
+                        <li>Log aggregation</li>
+                        <li>Performance analytics</li>
+                    </ul>
+                    <div class="capability-actions">
+                        <button class="btn btn-success" onclick="openDashboard('monitoring')">
+                            <i class="fas fa-eye"></i> Open Grafana
+                        </button>
+                        <button class="btn btn-secondary" onclick="showLogsModal()">
+                            <i class="fas fa-file-alt"></i> View Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Infrastructure Modal -->
+    <div id="infrastructureModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Deploy NEURICX Infrastructure</h2>
+                <span class="close" onclick="closeModal('infrastructureModal')">&times;</span>
+            </div>
+            <form id="infrastructureForm">
+                <div class="form-group">
+                    <label class="form-label">Deployment Environment</label>
+                    <select class="form-control" id="deploymentEnv">
+                        <option value="development">Development</option>
+                        <option value="staging">Staging</option>
+                        <option value="production">Production</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Cloud Provider</label>
+                        <select class="form-control" id="cloudProvider">
+                            <option value="docker">Docker (Local)</option>
+                            <option value="aws">Amazon AWS</option>
+                            <option value="gcp">Google Cloud</option>
+                            <option value="azure">Microsoft Azure</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Domain Name (Optional)</label>
+                        <input type="text" class="form-control" id="domainName" placeholder="your-domain.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="enableSSL"> Enable SSL/TLS
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="enableMonitoring" checked> Enable Monitoring
+                    </label>
+                </div>
+                <div class="status-message" id="infraStatus"></div>
+                <div class="progress-container" id="infraProgress" style="display: none;">
+                    <div class="progress-bar" id="infraProgressBar">0%</div>
+                </div>
+                <div class="capability-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-rocket"></i> Deploy Infrastructure
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('infrastructureModal')">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Simulation Modal -->
+    <div id="simulationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Create Economic Simulation</h2>
+                <span class="close" onclick="closeModal('simulationModal')">&times;</span>
+            </div>
+            <form id="simulationForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Number of Agents</label>
+                        <input type="number" class="form-control" id="numAgents" value="1000" min="100" max="10000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Simulation Steps</label>
+                        <input type="number" class="form-control" id="simSteps" value="250" min="50" max="1000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stock Symbols (comma-separated)</label>
+                    <input type="text" class="form-control" id="stockSymbols" value="AAPL,MSFT,GOOGL" placeholder="AAPL,MSFT,GOOGL">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Network Density</label>
+                    <input type="range" class="form-control" id="networkDensity" min="0.01" max="0.2" step="0.01" value="0.05">
+                    <small>Current: <span id="densityValue">0.05</span></small>
+                </div>
+                <div class="status-message" id="simStatus"></div>
+                <div class="progress-container" id="simProgress" style="display: none;">
+                    <div class="progress-bar" id="simProgressBar">0%</div>
+                </div>
+                <div class="capability-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Start Simulation
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('simulationModal')">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Streaming Modal -->
+    <div id="streamingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Configure Real-time Streaming</h2>
+                <span class="close" onclick="closeModal('streamingModal')">&times;</span>
+            </div>
+            <form id="streamingForm">
+                <div class="form-group">
+                    <label class="form-label">Data Sources</label>
+                    <div>
+                        <label><input type="checkbox" checked> Yahoo Finance</label>
+                        <label><input type="checkbox"> Alpha Vantage</label>
+                        <label><input type="checkbox"> Polygon.io</label>
+                        <label><input type="checkbox"> IEX Cloud</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Symbols to Track</label>
+                    <input type="text" class="form-control" id="streamSymbols" value="AAPL,MSFT,GOOGL,TSLA" placeholder="AAPL,MSFT,GOOGL">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Update Frequency (seconds)</label>
+                        <input type="number" class="form-control" id="updateFreq" value="60" min="10" max="300">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Buffer Size</label>
+                        <input type="number" class="form-control" id="bufferSize" value="1000" min="100" max="5000">
+                    </div>
+                </div>
+                <div class="status-message" id="streamStatus"></div>
+                <div class="capability-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-satellite-dish"></i> Start Streaming
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('streamingModal')">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Additional modals for other capabilities would be added here -->
+    
+    <!-- Include additional components -->
+    <script>
+        // Detect if running on GitHub Pages and use demo mode
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const scriptToLoad = isGitHubPages ? 'demo-startup.js' : 'startup.js';
+        
+        // Load appropriate startup script
+        const startupScript = document.createElement('script');
+        startupScript.src = scriptToLoad;
+        document.head.appendChild(startupScript);
+    </script>
+    <script src="modals.js"></script>
+    
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8000';
+        const WS_URL = 'ws://localhost:8001';
+        
+        // Global state
+        let socket = null;
+        let systemStats = {
+            activeSimulations: 0,
+            totalAgents: 0,
+            quantumJobs: 0,
+            uptime: 0
+        };
+
+        // Initialize platform
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            initializeWebSocket();
+            updateStats();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Start periodic updates
+            setInterval(updateStats, 30000); // Update every 30 seconds
+        });
+
+        // System Status Check
+        async function checkSystemStatus() {
+            try {
+                // Check API status
+                const apiResponse = await axios.get(`${API_BASE}/health`);
+                updateStatusIndicator('api-status', 'online');
+                
+                // Check streaming status
+                // This would be implemented based on your streaming service
+                updateStatusIndicator('streaming-status', 'offline');
+                
+                // Check quantum status
+                // This would be implemented based on your quantum service
+                updateStatusIndicator('quantum-status', 'offline');
+                
+            } catch (error) {
+                updateStatusIndicator('api-status', 'offline');
+                console.error('System status check failed:', error);
+            }
+        }
+
+        function updateStatusIndicator(elementId, status) {
+            const element = document.getElementById(elementId);
+            element.className = `status-dot status-${status}`;
+        }
+
+        // WebSocket initialization
+        function initializeWebSocket() {
+            try {
+                socket = io(WS_URL);
+                
+                socket.on('connect', function() {
+                    console.log('Connected to WebSocket');
+                    updateStatusIndicator('streaming-status', 'online');
+                });
+                
+                socket.on('disconnect', function() {
+                    console.log('Disconnected from WebSocket');
+                    updateStatusIndicator('streaming-status', 'offline');
+                });
+                
+                socket.on('stats_update', function(data) {
+                    updateStats(data);
+                });
+                
+            } catch (error) {
+                console.error('WebSocket connection failed:', error);
+            }
+        }
+
+        // Update system statistics
+        function updateStats(data = null) {
+            if (data) {
+                systemStats = { ...systemStats, ...data };
+            }
+            
+            document.getElementById('active-simulations').textContent = systemStats.activeSimulations;
+            document.getElementById('total-agents').textContent = systemStats.totalAgents.toLocaleString();
+            document.getElementById('quantum-jobs').textContent = systemStats.quantumJobs;
+            document.getElementById('uptime').textContent = formatUptime(systemStats.uptime);
+        }
+
+        function formatUptime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            return `${hours}h`;
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Infrastructure form
+            document.getElementById('infrastructureForm').addEventListener('submit', handleInfrastructureDeployment);
+            
+            // Simulation form
+            document.getElementById('simulationForm').addEventListener('submit', handleSimulationStart);
+            
+            // Streaming form
+            document.getElementById('streamingForm').addEventListener('submit', handleStreamingStart);
+            
+            // Network density slider
+            document.getElementById('networkDensity').addEventListener('input', function(e) {
+                document.getElementById('densityValue').textContent = e.target.value;
+            });
+        }
+
+        // Modal functions
+        function showInfrastructureModal() {
+            document.getElementById('infrastructureModal').style.display = 'block';
+        }
+
+        function showSimulationModal() {
+            document.getElementById('simulationModal').style.display = 'block';
+        }
+
+        function showStreamingModal() {
+            document.getElementById('streamingModal').style.display = 'block';
+        }
+
+        function showPolicyModal() {
+            alert('Policy Analysis modal will be implemented');
+        }
+
+        function showCrisisModal() {
+            alert('Crisis Prediction modal will be implemented');
+        }
+
+        function showQuantumModal() {
+            alert('Quantum Computing modal will be implemented');
+        }
+
+        function showMLModal() {
+            alert('Machine Learning modal will be implemented');
+        }
+
+        function showSystemStatus() {
+            alert('System Status page will be implemented');
+        }
+
+        function showLogsModal() {
+            alert('Logs viewer will be implemented');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            // Reset any progress bars or status messages
+            const progressBar = document.querySelector(`#${modalId} .progress-container`);
+            const statusMessage = document.querySelector(`#${modalId} .status-message`);
+            if (progressBar) progressBar.style.display = 'none';
+            if (statusMessage) {
+                statusMessage.style.display = 'none';
+                statusMessage.className = 'status-message';
+            }
+        }
+
+        function openDashboard(type) {
+            const dashboardUrls = {
+                'simulation': '/dashboard.html',
+                'realtime': '/dashboard.html#realtime',
+                'policy': '/dashboard.html#policy',
+                'risk': '/dashboard.html#risk',
+                'quantum': '/dashboard.html#quantum',
+                'ml': '/dashboard.html#ml',
+                'monitoring': 'http://localhost:3001' // Grafana
+            };
+            
+            const url = dashboardUrls[type];
+            if (url) {
+                window.open(url, '_blank');
+            }
+        }
+
+        // Infrastructure Deployment
+        async function handleInfrastructureDeployment(e) {
+            e.preventDefault();
+            
+            const formData = {
+                environment: document.getElementById('deploymentEnv').value,
+                cloudProvider: document.getElementById('cloudProvider').value,
+                domainName: document.getElementById('domainName').value,
+                enableSSL: document.getElementById('enableSSL').checked,
+                enableMonitoring: document.getElementById('enableMonitoring').checked
+            };
+            
+            showStatus('infraStatus', 'Deploying infrastructure...', 'warning');
+            showProgress('infraProgress', 'infraProgressBar');
+            
+            try {
+                // Simulate deployment progress
+                for (let i = 0; i <= 100; i += 10) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    updateProgress('infraProgressBar', i);
+                }
+                
+                showStatus('infraStatus', 'Infrastructure deployed successfully!', 'success');
+                updateStatusIndicator('api-status', 'online');
+                
+                setTimeout(() => {
+                    closeModal('infrastructureModal');
+                }, 2000);
+                
+            } catch (error) {
+                showStatus('infraStatus', 'Deployment failed: ' + error.message, 'error');
+            }
+        }
+
+        // Simulation Start
+        async function handleSimulationStart(e) {
+            e.preventDefault();
+            
+            const formData = {
+                n_agents: parseInt(document.getElementById('numAgents').value),
+                n_steps: parseInt(document.getElementById('simSteps').value),
+                symbols: document.getElementById('stockSymbols').value.split(',').map(s => s.trim()),
+                network_density: parseFloat(document.getElementById('networkDensity').value)
+            };
+            
+            showStatus('simStatus', 'Creating economy...', 'warning');
+            showProgress('simProgress', 'simProgressBar');
+            
+            try {
+                // Create economy
+                updateProgress('simProgressBar', 25);
+                const economyResponse = await axios.post(`${API_BASE}/economy/create`, formData);
+                const economyId = economyResponse.data.economy_id;
+                
+                // Start simulation
+                updateProgress('simProgressBar', 50);
+                const simResponse = await axios.post(`${API_BASE}/simulation/run`, {
+                    economy_id: economyId,
+                    n_steps: formData.n_steps
+                });
+                
+                updateProgress('simProgressBar', 100);
+                showStatus('simStatus', 'Simulation started successfully!', 'success');
+                
+                // Update stats
+                systemStats.activeSimulations++;
+                systemStats.totalAgents += formData.n_agents;
+                updateStats();
+                
+                setTimeout(() => {
+                    closeModal('simulationModal');
+                    openDashboard('simulation');
+                }, 2000);
+                
+            } catch (error) {
+                showStatus('simStatus', 'Simulation failed: ' + error.message, 'error');
+            }
+        }
+
+        // Streaming Start
+        async function handleStreamingStart(e) {
+            e.preventDefault();
+            
+            const formData = {
+                symbols: document.getElementById('streamSymbols').value.split(',').map(s => s.trim()),
+                update_frequency: parseInt(document.getElementById('updateFreq').value),
+                buffer_size: parseInt(document.getElementById('bufferSize').value)
+            };
+            
+            showStatus('streamStatus', 'Starting real-time streaming...', 'warning');
+            
+            try {
+                // Start streaming service
+                const response = await axios.post(`${API_BASE}/streaming/start`, formData);
+                
+                showStatus('streamStatus', 'Streaming started successfully!', 'success');
+                updateStatusIndicator('streaming-status', 'online');
+                
+                setTimeout(() => {
+                    closeModal('streamingModal');
+                    openDashboard('realtime');
+                }, 2000);
+                
+            } catch (error) {
+                showStatus('streamStatus', 'Streaming failed: ' + error.message, 'error');
+            }
+        }
+
+        // Utility functions
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status-message status-${type}`;
+            element.style.display = 'block';
+        }
+
+        function showProgress(containerId, barId) {
+            document.getElementById(containerId).style.display = 'block';
+            document.getElementById(barId).style.width = '0%';
+            document.getElementById(barId).textContent = '0%';
+        }
+
+        function updateProgress(barId, percentage) {
+            const bar = document.getElementById(barId);
+            bar.style.width = percentage + '%';
+            bar.textContent = percentage + '%';
+        }
+
+        // Close modals when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: neuricx
+  labels:
+    app: neuricx
+    environment: production
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: neuricx-quota
+  namespace: neuricx
+spec:
+  hard:
+    requests.cpu: "10"
+    requests.memory: 20Gi
+    limits.cpu: "20"
+    limits.memory: 40Gi
+    persistentvolumeclaims: "10"
+    pods: "50"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: neuricx-limits
+  namespace: neuricx
+spec:
+  limits:
+  - default:
+      cpu: "1"
+      memory: "2Gi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+    type: Container

@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEURICX Analytics Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #00d4ff;
+            --secondary-color: #0099cc;
+            --accent-color: #ff6b35;
+            --background-dark: #0a0e1a;
+            --background-medium: #1a1f2e;
+            --background-light: #2a3142;
+            --text-light: #e0e6ed;
+            --text-medium: #b8c1cc;
+            --success-color: #00ff88;
+            --warning-color: #ffaa00;
+            --danger-color: #ff4757;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: var(--background-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--background-medium);
+            border-right: 1px solid var(--primary-color);
+            padding: 2rem 1rem;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            color: var(--text-medium);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: var(--primary-color)20;
+            color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--background-light);
+        }
+
+        .dashboard-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .dashboard-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .control-select {
+            background: var(--background-light);
+            border: 1px solid var(--primary-color);
+            color: var(--text-light);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+
+        .control-button {
+            background: var(--primary-color);
+            color: var(--background-dark);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--background-light);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--primary-color)30;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.1);
+        }
+
+        .metric-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: var(--text-medium);
+            font-size: 0.9rem;
+        }
+
+        .metric-change {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .metric-change.positive {
+            color: var(--success-color);
+        }
+
+        .metric-change.negative {
+            color: var(--danger-color);
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: var(--background-light);
+            border-radius: 12px;
+            border: 1px solid var(--primary-color)30;
+            overflow: hidden;
+        }
+
+        .chart-header {
+            padding: 1rem 1.5rem;
+            background: var(--background-medium);
+            border-bottom: 1px solid var(--primary-color)30;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-title {
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .chart-content {
+            padding: 1rem;
+            height: 400px;
+        }
+
+        /* Network Visualization */
+        .network-container {
+            grid-column: 1 / -1;
+            background: var(--background-light);
+            border-radius: 12px;
+            border: 1px solid var(--primary-color)30;
+            overflow: hidden;
+        }
+
+        .network-content {
+            padding: 1rem;
+            height: 600px;
+            position: relative;
+        }
+
+        .network-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .network-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .network-node:hover {
+            stroke-width: 3;
+        }
+
+        .network-link {
+            stroke-opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+
+        .network-link:hover {
+            stroke-opacity: 1;
+            stroke-width: 3;
+        }
+
+        /* Data Table */
+        .data-table-container {
+            background: var(--background-light);
+            border-radius: 12px;
+            border: 1px solid var(--primary-color)30;
+            overflow: hidden;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--background-medium);
+        }
+
+        .data-table th {
+            background: var(--background-medium);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background: var(--background-medium);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -250px;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                min-width: auto;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .dashboard-controls {
+                justify-content: center;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--background-medium);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.online {
+            background: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.warning {
+            background: var(--warning-color);
+        }
+
+        .status-indicator.offline {
+            background: var(--danger-color);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-brain"></i>
+                    NEURICX
+                </div>
+            </div>
+            <nav>
+                <ul class="sidebar-nav">
+                    <li><a href="#overview" class="nav-link active" onclick="showSection('overview')">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Overview
+                    </a></li>
+                    <li><a href="#agents" class="nav-link" onclick="showSection('agents')">
+                        <i class="fas fa-users"></i>
+                        Agent Analysis
+                    </a></li>
+                    <li><a href="#networks" class="nav-link" onclick="showSection('networks')">
+                        <i class="fas fa-project-diagram"></i>
+                        Network Evolution
+                    </a></li>
+                    <li><a href="#intelligence" class="nav-link" onclick="showSection('intelligence')">
+                        <i class="fas fa-brain"></i>
+                        Collective Intelligence
+                    </a></li>
+                    <li><a href="#performance" class="nav-link" onclick="showSection('performance')">
+                        <i class="fas fa-chart-line"></i>
+                        Performance
+                    </a></li>
+                    <li><a href="#validation" class="nav-link" onclick="showSection('validation')">
+                        <i class="fas fa-check-circle"></i>
+                        Validation
+                    </a></li>
+                    <li><a href="#settings" class="nav-link" onclick="showSection('settings')">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Analytics Dashboard</h1>
+                <div class="dashboard-controls">
+                    <select class="control-select" id="timeRange">
+                        <option value="1h">Last Hour</option>
+                        <option value="24h" selected>Last 24 Hours</option>
+                        <option value="7d">Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                    </select>
+                    <button class="control-button" onclick="runSimulation()">
+                        <i class="fas fa-play"></i>
+                        Run Simulation
+                    </button>
+                    <button class="control-button" onclick="exportData()">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Overview Section -->
+            <div id="overview-section" class="dashboard-section">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-value" id="totalAgents">1000</span>
+                        <span class="metric-label">Total Agents</span>
+                        <div class="metric-change positive">
+                            <i class="fas fa-arrow-up"></i> +5% from last simulation
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value" id="ciIndex">1.34</span>
+                        <span class="metric-label">Collective Intelligence</span>
+                        <div class="metric-change positive">
+                            <i class="fas fa-arrow-up"></i> +12% emergence detected
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value" id="networkDensity">0.087</span>
+                        <span class="metric-label">Network Density</span>
+                        <div class="metric-change negative">
+                            <i class="fas fa-arrow-down"></i> -3% from baseline
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value" id="avgPerformance">0.068</span>
+                        <span class="metric-label">Avg Performance</span>
+                        <div class="metric-change positive">
+                            <i class="fas fa-arrow-up"></i> +8% vs benchmarks
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value">
+                            <span class="status-indicator online"></span>
+                            Online
+                        </span>
+                        <span class="metric-label">System Status</span>
+                        <div class="metric-change positive">
+                            <i class="fas fa-check"></i> All systems operational
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <span class="chart-title">Collective Intelligence Evolution</span>
+                            <i class="fas fa-brain" style="color: var(--primary-color);"></i>
+                        </div>
+                        <div class="chart-content" id="ciChart"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <span class="chart-title">Agent Performance Distribution</span>
+                            <i class="fas fa-chart-bar" style="color: var(--accent-color);"></i>
+                        </div>
+                        <div class="chart-content" id="performanceChart"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <span class="chart-title">Network Metrics Timeline</span>
+                            <i class="fas fa-project-diagram" style="color: var(--success-color);"></i>
+                        </div>
+                        <div class="chart-content" id="networkChart"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <span class="chart-title">Model Comparison</span>
+                            <i class="fas fa-balance-scale" style="color: var(--warning-color);"></i>
+                        </div>
+                        <div class="chart-content" id="comparisonChart"></div>
+                    </div>
+                </div>
+
+                <div class="network-container">
+                    <div class="chart-header">
+                        <span class="chart-title">Multi-Layer Network Visualization</span>
+                        <div>
+                            <button class="control-button" onclick="switchNetworkLayer('production')" style="margin-right: 0.5rem; font-size: 0.8rem; padding: 5px 10px;">Production</button>
+                            <button class="control-button" onclick="switchNetworkLayer('consumption')" style="margin-right: 0.5rem; font-size: 0.8rem; padding: 5px 10px;">Consumption</button>
+                            <button class="control-button" onclick="switchNetworkLayer('information')" style="font-size: 0.8rem; padding: 5px 10px;">Information</button>
+                        </div>
+                    </div>
+                    <div class="network-content" id="networkViz"></div>
+                </div>
+            </div>
+
+            <!-- Other sections (hidden by default) -->
+            <div id="agents-section" class="dashboard-section" style="display: none;">
+                <h2>Agent Analysis</h2>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Agent Type</th>
+                                <th>Count</th>
+                                <th>Avg Return</th>
+                                <th>Sharpe Ratio</th>
+                                <th>Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agentsTableBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="networks-section" class="dashboard-section" style="display: none;">
+                <h2>Network Evolution</h2>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading network analysis...</p>
+                </div>
+            </div>
+
+            <div id="intelligence-section" class="dashboard-section" style="display: none;">
+                <h2>Collective Intelligence</h2>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading intelligence metrics...</p>
+                </div>
+            </div>
+
+            <div id="performance-section" class="dashboard-section" style="display: none;">
+                <h2>Performance Analysis</h2>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading performance data...</p>
+                </div>
+            </div>
+
+            <div id="validation-section" class="dashboard-section" style="display: none;">
+                <h2>Framework Validation</h2>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading validation results...</p>
+                </div>
+            </div>
+
+            <div id="settings-section" class="dashboard-section" style="display: none;">
+                <h2>System Settings</h2>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading settings...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Global variables
+        let currentNetworkLayer = 'production';
+        let simulationData = {};
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadAgentsData();
+            createNetworkVisualization();
+            
+            // Auto-refresh data every 30 seconds
+            setInterval(updateMetrics, 30000);
+        });
+
+        // Navigation functions
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').style.display = 'block';
+            
+            // Update nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[onclick="showSection('${sectionName}')"]`).classList.add('active');
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            createCIChart();
+            createPerformanceChart();
+            createNetworkChart();
+            createComparisonChart();
+        }
+
+        // Create Collective Intelligence chart
+        function createCIChart() {
+            const steps = Array.from({length: 250}, (_, i) => i + 1);
+            const ciData = steps.map(step => 1 + Math.random() * 0.5 + Math.sin(step * 0.1) * 0.1);
+            
+            const trace = {
+                x: steps,
+                y: ciData,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'CI Index',
+                line: {
+                    color: '#00d4ff',
+                    width: 3
+                }
+            };
+
+            const emergenceThreshold = {
+                x: steps,
+                y: Array(250).fill(1.2),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Emergence Threshold',
+                line: {
+                    color: '#ff6b35',
+                    width: 2,
+                    dash: 'dash'
+                }
+            };
+
+            const layout = {
+                title: {
+                    text: '',
+                    font: { color: '#e0e6ed' }
+                },
+                xaxis: {
+                    title: 'Simulation Step',
+                    color: '#b8c1cc',
+                    gridcolor: '#2a3142'
+                },
+                yaxis: {
+                    title: 'CI Index',
+                    color: '#b8c1cc',
+                    gridcolor: '#2a3142'
+                },
+                plot_bgcolor: 'transparent',
+                paper_bgcolor: 'transparent',
+                font: { color: '#e0e6ed' },
+                margin: { l: 50, r: 20, t: 20, b: 50 }
+            };
+
+            Plotly.newPlot('ciChart', [trace, emergenceThreshold], layout, {responsive: true});
+        }
+
+        // Create performance distribution chart
+        function createPerformanceChart() {
+            const agentTypes = ['Rational Optimizer', 'Bounded Rational', 'Social Learner', 'Trend Follower', 'Contrarian', 'Adaptive Learner'];
+            const returns = [0.082, 0.068, 0.059, 0.042, 0.031, 0.076];
+            const colors = ['#00ff88', '#00d4ff', '#ffaa00', '#ff6b35', '#ff4757', '#9c88ff'];
+
+            const trace = {
+                x: agentTypes,
+                y: returns,
+                type: 'bar',
+                marker: {
+                    color: colors,
+                    opacity: 0.8
+                },
+                name: 'Average Return'
+            };
+
+            const layout = {
+                title: {
+                    text: '',
+                    font: { color: '#e0e6ed' }
+                },
+                xaxis: {
+                    title: 'Agent Type',
+                    color: '#b8c1cc',
+                    tickangle: -45
+                },
+                yaxis: {
+                    title: 'Return (%)',
+                    color: '#b8c1cc',
+                    gridcolor: '#2a3142'
+                },
+                plot_bgcolor: 'transparent',
+                paper_bgcolor: 'transparent',
+                font: { color: '#e0e6ed' },
+                margin: { l: 50, r: 20, t: 20, b: 100 }
+            };
+
+            Plotly.newPlot('performanceChart', [trace], layout, {responsive: true});
+        }
+
+        // Create network metrics chart
+        function createNetworkChart() {
+            const steps = Array.from({length: 250}, (_, i) => i + 1);
+            
+            const production = {
+                x: steps,
+                y: steps.map(step => 0.05 + Math.sin(step * 0.05) * 0.02 + Math.random() * 0.01),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Production',
+                line: { color: '#00ff88', width: 2 }
+            };
+
+            const consumption = {
+                x: steps,
+                y: steps.map(step => 0.08 + Math.cos(step * 0.03) * 0.03 + Math.random() * 0.01),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Consumption',
+                line: { color: '#ffaa00', width: 2 }
+            };
+
+            const information = {
+                x: steps,
+                y: steps.map(step => 0.12 + Math.sin(step * 0.04) * 0.04 + Math.random() * 0.015),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Information',
+                line: { color: '#00d4ff', width: 2 }
+            };
+
+            const layout = {
+                title: {
+                    text: '',
+                    font: { color: '#e0e6ed' }
+                },
+                xaxis: {
+                    title: 'Simulation Step',
+                    color: '#b8c1cc',
+                    gridcolor: '#2a3142'
+                },
+                yaxis: {
+                    title: 'Network Density',
+                    color: '#b8c1cc',
+                    gridcolor: '#2a3142'
+                },
+                plot_bgcolor: 'transparent',
+                paper_bgcolor: 'transparent',
+                font: { color: '#e0e6ed' },
+                margin: { l: 50, r: 20, t: 20, b: 50 }
+            };
+
+            Plotly.newPlot('networkChart', [production, consumption, information], layout, {responsive: true});
+        }
+
+        // Create model comparison chart
+        function createComparisonChart() {
+            const models = ['NEURICX', 'DSGE', 'VAR', 'Random Walk'];
+            const mse = [0.0024, 0.0089, 0.0067, 0.0156];
+            const mae = [0.034, 0.067, 0.058, 0.089];
+            
+            const mseTrace = {
+                x: models,
+                y: mse,
+                type: 'bar',
+                name: 'MSE',
+                marker: { color: '#00d4ff', opacity: 0.8 },
+                yaxis: 'y'
+            };
+
+            const maeTrace = {
+                x: models,
+                y: mae,
+                type: 'bar',
+                name: 'MAE',
+                marker: { color: '#ff6b35', opacity: 0.8 },
+                yaxis: 'y2'
+            };
+
+            const layout = {
+                title: {
+                    text: '',
+                    font: { color: '#e0e6ed' }
+                },
+                xaxis: {
+                    title: 'Model',
+                    color: '#b8c1cc'
+                },
+                yaxis: {
+                    title: 'MSE',
+                    color: '#b8c1cc',
+                    side: 'left'
+                },
+                yaxis2: {
+                    title: 'MAE',
+                    color: '#b8c1cc',
+                    side: 'right',
+                    overlaying: 'y'
+                },
+                plot_bgcolor: 'transparent',
+                paper_bgcolor: 'transparent',
+                font: { color: '#e0e6ed' },
+                margin: { l: 50, r: 50, t: 20, b: 50 }
+            };
+
+            Plotly.newPlot('comparisonChart', [mseTrace, maeTrace], layout, {responsive: true});
+        }
+
+        // Create network visualization
+        function createNetworkVisualization() {
+            const container = d3.select('#networkViz');
+            const width = container.node().getBoundingClientRect().width;
+            const height = 600;
+
+            // Clear existing content
+            container.selectAll('*').remove();
+
+            const svg = container.append('svg')
+                .attr('class', 'network-svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Generate sample network data
+            const nodes = Array.from({length: 50}, (_, i) => ({
+                id: i,
+                type: Math.floor(Math.random() * 6),
+                x: Math.random() * width,
+                y: Math.random() * height
+            }));
+
+            const links = [];
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    if (Math.random() < 0.1) {
+                        links.push({
+                            source: i,
+                            target: j,
+                            strength: Math.random()
+                        });
+                    }
+                }
+            }
+
+            const simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).distance(50))
+                .force('charge', d3.forceManyBody().strength(-100))
+                .force('center', d3.forceCenter(width / 2, height / 2));
+
+            const link = svg.append('g')
+                .selectAll('line')
+                .data(links)
+                .enter().append('line')
+                .attr('class', 'network-link')
+                .attr('stroke', '#0099cc')
+                .attr('stroke-width', d => d.strength * 3);
+
+            const node = svg.append('g')
+                .selectAll('circle')
+                .data(nodes)
+                .enter().append('circle')
+                .attr('class', 'network-node')
+                .attr('r', 6)
+                .attr('fill', d => {
+                    const colors = ['#00ff88', '#00d4ff', '#ffaa00', '#ff6b35', '#ff4757', '#9c88ff'];
+                    return colors[d.type];
+                })
+                .attr('stroke', '#ffffff')
+                .attr('stroke-width', 2);
+
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+            });
+
+            // Add drag functionality
+            node.call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }
+
+        // Load agents data
+        function loadAgentsData() {
+            const agentData = [
+                { type: 'Rational Optimizer', count: 150, avgReturn: 8.2, sharpe: 1.34, performance: 'Excellent' },
+                { type: 'Bounded Rational', count: 250, avgReturn: 6.8, sharpe: 1.12, performance: 'Good' },
+                { type: 'Social Learner', count: 200, avgReturn: 5.9, sharpe: 0.98, performance: 'Good' },
+                { type: 'Trend Follower', count: 150, avgReturn: 4.2, sharpe: 0.87, performance: 'Fair' },
+                { type: 'Contrarian', count: 100, avgReturn: 3.1, sharpe: 0.73, performance: 'Fair' },
+                { type: 'Adaptive Learner', count: 150, avgReturn: 7.6, sharpe: 1.18, performance: 'Good' }
+            ];
+
+            const tbody = document.getElementById('agentsTableBody');
+            tbody.innerHTML = '';
+
+            agentData.forEach(agent => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${agent.type}</td>
+                    <td>${agent.count}</td>
+                    <td>${agent.avgReturn.toFixed(1)}%</td>
+                    <td>${agent.sharpe.toFixed(2)}</td>
+                    <td><span class="status-indicator ${getPerformanceClass(agent.performance)}"></span>${agent.performance}</td>
+                `;
+            });
+        }
+
+        function getPerformanceClass(performance) {
+            switch(performance) {
+                case 'Excellent': return 'online';
+                case 'Good': return 'warning';
+                case 'Fair': return 'offline';
+                default: return 'offline';
+            }
+        }
+
+        // Control functions
+        function runSimulation() {
+            // Simulate running a new simulation
+            const button = event.target;
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+            button.disabled = true;
+
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                updateMetrics();
+                // Show success notification
+                showNotification('Simulation completed successfully!', 'success');
+            }, 3000);
+        }
+
+        function exportData() {
+            // Simulate data export
+            showNotification('Data export started...', 'info');
+            
+            setTimeout(() => {
+                showNotification('Data exported successfully!', 'success');
+            }, 2000);
+        }
+
+        function switchNetworkLayer(layer) {
+            currentNetworkLayer = layer;
+            createNetworkVisualization();
+            showNotification(`Switched to ${layer} network layer`, 'info');
+        }
+
+        function updateMetrics() {
+            // Simulate real-time metric updates
+            const agentCount = document.getElementById('totalAgents');
+            const ciIndex = document.getElementById('ciIndex');
+            const networkDensity = document.getElementById('networkDensity');
+            const avgPerformance = document.getElementById('avgPerformance');
+
+            // Add small random variations
+            const currentCI = parseFloat(ciIndex.textContent);
+            const newCI = (currentCI + (Math.random() - 0.5) * 0.1).toFixed(2);
+            ciIndex.textContent = Math.max(0.5, Math.min(2.0, newCI));
+
+            const currentDensity = parseFloat(networkDensity.textContent);
+            const newDensity = (currentDensity + (Math.random() - 0.5) * 0.01).toFixed(3);
+            networkDensity.textContent = Math.max(0.01, Math.min(0.5, newDensity));
+
+            const currentPerf = parseFloat(avgPerformance.textContent);
+            const newPerf = (currentPerf + (Math.random() - 0.5) * 0.01).toFixed(3);
+            avgPerformance.textContent = Math.max(0, Math.min(0.2, newPerf));
+        }
+
+        function showNotification(message, type) {
+            // Create and show a notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'}-color);
+                color: var(--background-dark);
+                padding: 12px 20px;
+                border-radius: 6px;
+                font-weight: 600;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Add CSS for notification animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

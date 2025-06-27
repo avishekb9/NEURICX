@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEURICX | Network-Enhanced Economic Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #00d4ff;
+            --secondary-color: #0099cc;
+            --accent-color: #ff6b35;
+            --background-dark: #0a0e1a;
+            --background-medium: #1a1f2e;
+            --background-light: #2a3142;
+            --text-light: #e0e6ed;
+            --text-medium: #b8c1cc;
+            --success-color: #00ff88;
+            --warning-color: #ffaa00;
+            --danger-color: #ff4757;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: var(--background-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Animated Background */
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(45deg, var(--background-dark), var(--background-medium));
+        }
+
+        .background-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, var(--primary-color)15 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, var(--secondary-color)15 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, var(--accent-color)10 0%, transparent 50%);
+            animation: backgroundPulse 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--primary-color);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            animation: logoSpin 10s linear infinite;
+        }
+
+        @keyframes logoSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-medium);
+            text-decoration: none;
+            font-weight: 400;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-content h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 20px var(--primary-color)50; }
+            100% { text-shadow: 0 0 40px var(--accent-color)50; }
+        }
+
+        .hero-content .subtitle {
+            font-size: 1.5rem;
+            color: var(--text-medium);
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--background-dark);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 0;
+            background: var(--background-medium);
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary-color);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: var(--background-light);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid var(--primary-color)30;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--primary-color)05, var(--accent-color)05);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-color);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-light);
+        }
+
+        .feature-card p {
+            color: var(--text-medium);
+            line-height: 1.8;
+        }
+
+        /* Architecture Section */
+        .architecture {
+            padding: 100px 0;
+            background: var(--background-dark);
+        }
+
+        .architecture-diagram {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .layer-card {
+            background: var(--background-light);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .layer-card.production {
+            border-color: var(--success-color);
+            background: linear-gradient(135deg, var(--background-light), rgba(0, 255, 136, 0.1));
+        }
+
+        .layer-card.consumption {
+            border-color: var(--warning-color);
+            background: linear-gradient(135deg, var(--background-light), rgba(255, 170, 0, 0.1));
+        }
+
+        .layer-card.information {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--background-light), rgba(0, 212, 255, 0.1));
+        }
+
+        .layer-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .layer-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .layer-card.production .layer-icon { color: var(--success-color); }
+        .layer-card.consumption .layer-icon { color: var(--warning-color); }
+        .layer-card.information .layer-icon { color: var(--primary-color); }
+
+        /* Statistics Section */
+        .statistics {
+            padding: 100px 0;
+            background: var(--background-medium);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            background: var(--background-light);
+            border-radius: 15px;
+            border: 1px solid var(--primary-color)30;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+        }
+
+        .stat-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-medium);
+            font-size: 1.1rem;
+        }
+
+        /* Demo Section */
+        .demo {
+            padding: 100px 0;
+            background: var(--background-dark);
+        }
+
+        .demo-container {
+            background: var(--background-light);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid var(--primary-color)50;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--primary-color)10 0%, transparent 70%);
+            animation: demoGlow 8s ease-in-out infinite;
+        }
+
+        @keyframes demoGlow {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+
+        .demo-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .demo-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-button {
+            background: var(--primary-color);
+            color: var(--background-dark);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .control-button.active {
+            background: var(--accent-color);
+        }
+
+        .demo-visualization {
+            height: 400px;
+            background: var(--background-dark);
+            border-radius: 15px;
+            border: 1px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .network-visualization {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .network-node {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--primary-color)80;
+            animation: nodeFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes nodeFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .network-connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-color)50, var(--secondary-color)50);
+            animation: connectionPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes connectionPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Footer */
+        footer {
+            background: var(--background-dark);
+            padding: 50px 0 30px;
+            border-top: 1px solid var(--primary-color);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            font-family: 'Orbitron', monospace;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: var(--text-medium);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--primary-color);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--background-light);
+            color: var(--text-medium);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-content .subtitle {
+                font-size: 1.2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .architecture-diagram {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .demo-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <div class="nav-container">
+                <a href="#" class="logo">
+                    <i class="fas fa-brain"></i>
+                    NEURICX
+                </a>
+                <ul class="nav-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#architecture">Architecture</a></li>
+                    <li><a href="#demo">Demo</a></li>
+                    <li><a href="#documentation">Docs</a></li>
+                    <li><a href="https://github.com/neuricx-economics/NEURICX" target="_blank">GitHub</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>NEURICX</h1>
+                <p class="subtitle">
+                    Network-Enhanced Unified Rational Intelligence for Computational Economics
+                </p>
+                <p style="color: var(--text-medium); margin-bottom: 2rem; max-width: 900px; margin-left: auto; margin-right: auto;">
+                    A revolutionary framework combining heterogeneous agent-based modeling with multi-layer networks and collective intelligence emergence. Built for empirical validation and real-world economic analysis.
+                </p>
+                <div class="cta-buttons">
+                    <a href="#demo" class="btn btn-primary">
+                        <i class="fas fa-rocket"></i>
+                        Launch Demo
+                    </a>
+                    <a href="#documentation" class="btn btn-secondary">
+                        <i class="fas fa-book"></i>
+                        Documentation
+                    </a>
+                    <a href="https://github.com/neuricx-economics/NEURICX" class="btn btn-secondary" target="_blank">
+                        <i class="fab fa-github"></i>
+                        GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Revolutionary Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-users feature-icon"></i>
+                    <h3>Heterogeneous Agents</h3>
+                    <p>Six distinct agent types with unique decision-making processes: rational optimizers, bounded rational agents, social learners, trend followers, contrarians, and adaptive learners.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-network-wired feature-icon"></i>
+                    <h3>Multi-Layer Networks</h3>
+                    <p>Three interconnected network layers: production networks for economic complementarity, consumption networks for social influence, and information networks for communication.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-broadcast-tower feature-icon"></i>
+                    <h3>Multi-Protocol Communication</h3>
+                    <p>Advanced communication system with Model Context Protocol (MCP), market signaling, and social communication channels for realistic information flow.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-brain feature-icon"></i>
+                    <h3>Collective Intelligence</h3>
+                    <p>Real-time tracking and measurement of collective intelligence emergence with mathematically rigorous detection algorithms and validation frameworks.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-line feature-icon"></i>
+                    <h3>Empirical Validation</h3>
+                    <p>Comprehensive validation suite comparing against DSGE, VAR, and Random Walk models with superior performance metrics and statistical testing.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-cogs feature-icon"></i>
+                    <h3>Computational Efficiency</h3>
+                    <p>O(N²) computational complexity with optimized algorithms, enabling large-scale simulations of up to 1000+ agents with real-time analysis capabilities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="architecture" class="architecture">
+        <div class="container">
+            <h2 class="section-title">System Architecture</h2>
+            <div class="architecture-diagram">
+                <div class="layer-card production">
+                    <i class="fas fa-industry layer-icon"></i>
+                    <h3>Production Networks</h3>
+                    <p>Economic complementarity-based connections modeling supply chains, partnerships, and production relationships with dynamic evolution algorithms.</p>
+                </div>
+                <div class="layer-card consumption">
+                    <i class="fas fa-shopping-cart layer-icon"></i>
+                    <h3>Consumption Networks</h3>
+                    <p>Social influence and preference similarity networks capturing consumer behavior, peer effects, and market sentiment propagation mechanisms.</p>
+                </div>
+                <div class="layer-card information">
+                    <i class="fas fa-satellite-dish layer-icon"></i>
+                    <h3>Information Networks</h3>
+                    <p>Multi-protocol communication networks with MCP integration, enabling sophisticated information exchange and collective intelligence emergence.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="statistics">
+        <div class="container">
+            <h2 class="section-title">Performance Metrics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="agent-count">1000</span>
+                    <span class="stat-label">Maximum Agents</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">65%</span>
+                    <span class="stat-label">Better MSE vs DSGE</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">18%</span>
+                    <span class="stat-label">Better Accuracy vs VAR</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">O(N²)</span>
+                    <span class="stat-label">Computational Complexity</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">1.34</span>
+                    <span class="stat-label">Best Sharpe Ratio</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">3</span>
+                    <span class="stat-label">Network Layers</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo">
+        <div class="container">
+            <h2 class="section-title">Interactive Demo</h2>
+            <div class="demo-container">
+                <div class="demo-content">
+                    <div class="demo-controls">
+                        <button class="control-button active" onclick="switchDemo('network')">
+                            <i class="fas fa-project-diagram"></i>
+                            Network Evolution
+                        </button>
+                        <button class="control-button" onclick="switchDemo('agents')">
+                            <i class="fas fa-users"></i>
+                            Agent Behavior
+                        </button>
+                        <button class="control-button" onclick="switchDemo('intelligence')">
+                            <i class="fas fa-brain"></i>
+                            Collective Intelligence
+                        </button>
+                        <button class="control-button" onclick="switchDemo('performance')">
+                            <i class="fas fa-chart-area"></i>
+                            Performance Analysis
+                        </button>
+                    </div>
+                    <div class="demo-visualization">
+                        <div class="network-visualization" id="demo-viz">
+                            <!-- Dynamic content will be generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>NEURICX</h3>
+                    <ul>
+                        <li><a href="#home">About</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#architecture">Architecture</a></li>
+                        <li><a href="NEURICX_Model.pdf" target="_blank">Mathematical Framework</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Documentation</h3>
+                    <ul>
+                        <li><a href="https://github.com/neuricx-economics/NEURICX/wiki" target="_blank">Getting Started</a></li>
+                        <li><a href="https://github.com/neuricx-economics/NEURICX/wiki/API" target="_blank">API Reference</a></li>
+                        <li><a href="https://github.com/neuricx-economics/NEURICX/wiki/Examples" target="_blank">Examples</a></li>
+                        <li><a href="https://github.com/neuricx-economics/NEURICX/wiki/FAQ" target="_blank">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Community</h3>
+                    <ul>
+                        <li><a href="https://github.com/neuricx-economics/NEURICX" target="_blank">GitHub</a></li>
+                        <li><a href="https://github.com/neuricx-economics/NEURICX/discussions" target="_blank">Discussions</a></li>
+                        <li><a href="https://github.com/neuricx-economics/NEURICX/issues" target="_blank">Issues</a></li>
+                        <li><a href="mailto:neuricx@econresearch.ai">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Related Projects</h3>
+                    <ul>
+                        <li><a href="https://github.com/avishekb9/AgentsMCP" target="_blank">AgentsMCP</a></li>
+                        <li><a href="https://avishekb9.github.io/econstellar/" target="_blank">EconStellar</a></li>
+                        <li><a href="https://github.com/avishekb9/WaveQTE-master" target="_blank">WaveQTE</a></li>
+                        <li><a href="https://github.com/avishekb9/ManyIVsNets" target="_blank">ManyIVsNets</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 NEURICX Consortium. Licensed under MIT. Built with 🧠 for the future of economics.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Network visualization functions
+        function createNetworkNodes(container, count = 50) {
+            container.innerHTML = '';
+            const nodes = [];
+            
+            for (let i = 0; i < count; i++) {
+                const node = document.createElement('div');
+                node.className = 'network-node';
+                
+                const x = Math.random() * (container.clientWidth - 20);
+                const y = Math.random() * (container.clientHeight - 20);
+                
+                node.style.left = x + 'px';
+                node.style.top = y + 'px';
+                node.style.animationDelay = Math.random() * 3 + 's';
+                
+                container.appendChild(node);
+                nodes.push({ element: node, x, y });
+            }
+            
+            return nodes;
+        }
+
+        function createConnections(container, nodes) {
+            // Clear existing connections
+            const connections = container.querySelectorAll('.network-connection');
+            connections.forEach(conn => conn.remove());
+            
+            // Create new connections
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    if (Math.random() < 0.1) { // 10% connection probability
+                        const connection = document.createElement('div');
+                        connection.className = 'network-connection';
+                        
+                        const dx = nodes[j].x - nodes[i].x;
+                        const dy = nodes[j].y - nodes[i].y;
+                        const length = Math.sqrt(dx * dx + dy * dy);
+                        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                        
+                        connection.style.width = length + 'px';
+                        connection.style.left = nodes[i].x + 10 + 'px';
+                        connection.style.top = nodes[i].y + 10 + 'px';
+                        connection.style.transform = `rotate(${angle}deg)`;
+                        connection.style.transformOrigin = '0 50%';
+                        connection.style.animationDelay = Math.random() * 2 + 's';
+                        
+                        container.appendChild(connection);
+                    }
+                }
+            }
+        }
+
+        function switchDemo(type) {
+            // Update button states
+            document.querySelectorAll('.control-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.control-button').classList.add('active');
+            
+            const container = document.getElementById('demo-viz');
+            
+            switch(type) {
+                case 'network':
+                    const nodes = createNetworkNodes(container, 30);
+                    setTimeout(() => createConnections(container, nodes), 500);
+                    break;
+                    
+                case 'agents':
+                    container.innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px; width: 100%;">
+                            <div style="background: var(--success-color)20; padding: 20px; border-radius: 10px; text-align: center;">
+                                <i class="fas fa-brain" style="font-size: 2rem; color: var(--success-color); margin-bottom: 10px;"></i>
+                                <h4>Rational Optimizers</h4>
+                                <p>15% of population</p>
+                            </div>
+                            <div style="background: var(--warning-color)20; padding: 20px; border-radius: 10px; text-align: center;">
+                                <i class="fas fa-users" style="font-size: 2rem; color: var(--warning-color); margin-bottom: 10px;"></i>
+                                <h4>Social Learners</h4>
+                                <p>20% of population</p>
+                            </div>
+                            <div style="background: var(--primary-color)20; padding: 20px; border-radius: 10px; text-align: center;">
+                                <i class="fas fa-chart-line" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 10px;"></i>
+                                <h4>Trend Followers</h4>
+                                <p>15% of population</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'intelligence':
+                    container.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column;">
+                            <div style="width: 200px; height: 200px; border: 3px solid var(--primary-color); border-radius: 50%; position: relative; margin-bottom: 20px;">
+                                <div style="width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(var(--primary-color) 0deg, var(--accent-color) 120deg, var(--success-color) 240deg, var(--primary-color) 360deg); animation: spin 5s linear infinite;"></div>
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--background-dark); width: 150px; height: 150px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                                    <span style="font-family: 'Orbitron'; font-size: 2rem; color: var(--primary-color);">1.34</span>
+                                    <span style="color: var(--text-medium);">CI Index</span>
+                                </div>
+                            </div>
+                            <p style="text-align: center; color: var(--text-medium);">Collective Intelligence Emergence Detected</p>
+                        </div>
+                        <style>
+                            @keyframes spin {
+                                from { transform: rotate(0deg); }
+                                to { transform: rotate(360deg); }
+                            }
+                        </style>
+                    `;
+                    break;
+                    
+                case 'performance':
+                    container.innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; padding: 30px; width: 100%;">
+                            <div style="text-align: center;">
+                                <h4 style="color: var(--primary-color); margin-bottom: 15px;">Model Comparison</h4>
+                                <div style="background: var(--background-medium); padding: 20px; border-radius: 10px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                        <span>NEURICX</span>
+                                        <span style="color: var(--success-color);">0.687</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                        <span>DSGE</span>
+                                        <span style="color: var(--danger-color);">0.523</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span>VAR</span>
+                                        <span style="color: var(--danger-color);">0.541</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: center;">
+                                <h4 style="color: var(--primary-color); margin-bottom: 15px;">Performance Metrics</h4>
+                                <div style="background: var(--background-medium); padding: 20px; border-radius: 10px;">
+                                    <div style="margin-bottom: 10px;">
+                                        <span style="color: var(--success-color);">MSE: 65% better</span>
+                                    </div>
+                                    <div style="margin-bottom: 10px;">
+                                        <span style="color: var(--success-color);">MAE: 45% better</span>
+                                    </div>
+                                    <div>
+                                        <span style="color: var(--success-color);">Directional: 18% better</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        // Initialize network demo
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('demo-viz');
+            const nodes = createNetworkNodes(container, 30);
+            setTimeout(() => createConnections(container, nodes), 1000);
+            
+            // Animate agent count
+            let count = 0;
+            const target = 1000;
+            const agentCounter = document.getElementById('agent-count');
+            const increment = target / 100;
+            
+            const timer = setInterval(() => {
+                count += increment;
+                if (count >= target) {
+                    count = target;
+                    clearInterval(timer);
+                }
+                agentCounter.textContent = Math.floor(count);
+            }, 20);
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

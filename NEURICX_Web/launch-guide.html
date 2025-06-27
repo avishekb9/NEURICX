@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEURICX Launch Guide | Complete Setup Instructions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #00d4ff;
+            --secondary-color: #0099cc;
+            --accent-color: #ff6b35;
+            --background-dark: #0a0e1a;
+            --background-medium: #1a1f2e;
+            --background-light: #2a3142;
+            --text-light: #e0e6ed;
+            --text-medium: #b8c1cc;
+            --success-color: #00ff88;
+            --warning-color: #ffaa00;
+            --danger-color: #ff4757;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: var(--background-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--primary-color);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-medium);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 20px;
+        }
+
+        .hero-section {
+            text-align: center;
+            padding: 3rem 0;
+            background: linear-gradient(135deg, var(--background-medium), var(--background-light));
+            border-radius: 15px;
+            margin-bottom: 3rem;
+            border: 1px solid var(--primary-color);
+        }
+
+        .hero-section h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+            color: var(--text-medium);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .guide-nav {
+            background: var(--background-medium);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--secondary-color);
+        }
+
+        .guide-nav h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .guide-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .guide-link {
+            background: var(--background-light);
+            padding: 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .guide-link:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .guide-link i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .section {
+            background: var(--background-medium);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--secondary-color);
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            font-family: 'Orbitron', monospace;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .section h3 {
+            color: var(--text-light);
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.3rem;
+        }
+
+        .section h4 {
+            color: var(--text-light);
+            margin: 1rem 0 0.5rem 0;
+            font-size: 1.1rem;
+        }
+
+        .step-list {
+            counter-reset: step-counter;
+        }
+
+        .step {
+            counter-increment: step-counter;
+            margin-bottom: 2rem;
+            padding-left: 3rem;
+            position: relative;
+        }
+
+        .step::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: var(--primary-color);
+            color: var(--background-dark);
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .step h4 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid var(--secondary-color);
+        }
+
+        .code-header {
+            background: var(--background-light);
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--secondary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-lang {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-color);
+            color: var(--background-dark);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .alert-warning {
+            background: rgba(255, 170, 0, 0.1);
+            border-color: var(--warning-color);
+            color: var(--warning-color);
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+
+        .alert-danger {
+            background: rgba(255, 71, 87, 0.1);
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: var(--background-light);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid var(--secondary-color);
+        }
+
+        .feature-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card i {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--background-dark);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .requirement-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .requirement-list li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .requirement-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .architecture-diagram {
+            text-align: center;
+            margin: 2rem 0;
+            font-family: monospace;
+            background: var(--background-light);
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid var(--secondary-color);
+        }
+
+        .tree {
+            text-align: left;
+            font-family: monospace;
+            background: var(--background-light);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+
+            .guide-links {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step {
+                padding-left: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-network-wired"></i>
+                NEURICX
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="platform.html">Platform</a></li>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="launch-guide.html">Launch Guide</a></li>
+                    <li><a href="#documentation">Documentation</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="hero-section">
+            <h1><i class="fas fa-rocket"></i> NEURICX Launch Guide</h1>
+            <p>Complete step-by-step instructions to deploy and launch all NEURICX capabilities including infrastructure, streaming, dashboards, and advanced analytics.</p>
+        </section>
+
+        <nav class="guide-nav">
+            <h2>Quick Navigation</h2>
+            <div class="guide-links">
+                <a href="#prerequisites" class="guide-link">
+                    <i class="fas fa-check-circle"></i>
+                    Prerequisites & Requirements
+                </a>
+                <a href="#infrastructure" class="guide-link">
+                    <i class="fas fa-server"></i>
+                    Infrastructure Deployment
+                </a>
+                <a href="#services" class="guide-link">
+                    <i class="fas fa-cogs"></i>
+                    Service Configuration
+                </a>
+                <a href="#capabilities" class="guide-link">
+                    <i class="fas fa-brain"></i>
+                    Launch Capabilities
+                </a>
+                <a href="#monitoring" class="guide-link">
+                    <i class="fas fa-chart-line"></i>
+                    Monitoring & Dashboards
+                </a>
+                <a href="#troubleshooting" class="guide-link">
+                    <i class="fas fa-tools"></i>
+                    Troubleshooting
+                </a>
+            </div>
+        </nav>
+
+        <section id="prerequisites" class="section">
+            <h2><i class="fas fa-check-circle"></i> Prerequisites & Requirements</h2>
+            
+            <h3>System Requirements</h3>
+            <ul class="requirement-list">
+                <li><strong>Operating System:</strong> Linux (Ubuntu 20.04+), macOS 10.15+, or Windows 10+ with WSL2</li>
+                <li><strong>Memory:</strong> Minimum 8GB RAM (16GB+ recommended for production)</li>
+                <li><strong>Storage:</strong> 50GB+ free disk space</li>
+                <li><strong>CPU:</strong> 4+ cores (8+ cores recommended)</li>
+                <li><strong>Network:</strong> Stable internet connection for data streaming</li>
+            </ul>
+
+            <h3>Required Software</h3>
+            <ul class="requirement-list">
+                <li>Docker (20.10+) and Docker Compose (2.0+)</li>
+                <li>Git (2.30+)</li>
+                <li>Node.js (16+) and npm (8+)</li>
+                <li>R (4.0+) with development tools</li>
+                <li>Python (3.8+) for quantum computing components</li>
+            </ul>
+
+            <h3>Optional Components</h3>
+            <ul class="requirement-list">
+                <li>Kubernetes (1.20+) for scalable deployment</li>
+                <li>Terraform (1.0+) for cloud infrastructure</li>
+                <li>API keys for external data sources (Alpha Vantage, Polygon.io)</li>
+                <li>Quantum computing API tokens (IBM Quantum, IonQ)</li>
+            </ul>
+
+            <div class="alert alert-info">
+                <strong>Note:</strong> All software dependencies are automatically installed when using Docker deployment. Manual installation is only required for development setup.
+            </div>
+        </section>
+
+        <section id="infrastructure" class="section">
+            <h2><i class="fas fa-server"></i> Infrastructure Deployment</h2>
+
+            <div class="step-list">
+                <div class="step">
+                    <h4>Clone the Repository</h4>
+                    <p>First, clone the NEURICX repository and navigate to the deployment directory:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">bash</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code class="language-bash">git clone https://github.com/your-org/neuricx.git
+cd neuricx/deploy</code></pre>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Configure Environment</h4>
+                    <p>Set up your environment variables by creating a .env file:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">bash</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code class="language-bash"># Copy the example environment file
+cp .env.example .env
+
+# Edit the environment file with your configuration
+nano .env</code></pre>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Important:</strong> Update the API keys and database passwords in the .env file before deployment.
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Deploy Infrastructure</h4>
+                    <p>Use the automated deployment script for quick setup:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">bash</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code class="language-bash"># Make the script executable
+chmod +x deploy.sh
+
+# Deploy for development
+./deploy.sh deploy development
+
+# Deploy for production
+./deploy.sh deploy production your-domain.com true</code></pre>
+                    </div>
+
+                    <p>Or deploy manually with Docker Compose:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">bash</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code class="language-bash"># Start all services
+docker-compose up -d
+
+# Check service status
+docker-compose ps
+
+# View logs
+docker-compose logs -f</code></pre>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Verify Deployment</h4>
+                    <p>Check that all services are running correctly:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">bash</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code class="language-bash"># Check API health
+curl http://localhost:8000/health
+
+# Check dashboard
+curl http://localhost:3000
+
+# Check database connection
+docker-compose exec postgres pg_isready</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Cloud Deployment with Terraform</h3>
+            <p>For production cloud deployment, use the provided Terraform configurations:</p>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash">cd terraform
+
+# Initialize Terraform
+terraform init
+
+# Plan deployment (AWS example)
+terraform plan -var="cloud_provider=aws" -var="environment=production"
+
+# Apply configuration
+terraform apply</code></pre>
+            </div>
+        </section>
+
+        <section id="services" class="section">
+            <h2><i class="fas fa-cogs"></i> Service Configuration</h2>
+
+            <h3>Core Services Overview</h3>
+            <div class="architecture-diagram">
+                <pre>
+┌─────────────────────┐    ┌──────────────────────┐    ┌─────────────────────┐
+│   Web Dashboard     │    │     R API Server     │    │  Quantum Computing  │
+│   (React/D3.js)     │◄──►│     (Plumber)        │◄──►│     Service         │
+└─────────────────────┘    └──────────────────────┘    └─────────────────────┘
+           │                           │                           │
+           │                           ▼                           │
+           │                ┌──────────────────────┐               │
+           │                │   Redis Cache &      │               │
+           │                │   Message Queue      │               │
+           │                └──────────────────────┘               │
+           │                           │                           │
+           ▼                           ▼                           ▼
+┌─────────────────────┐    ┌──────────────────────┐    ┌─────────────────────┐
+│  Real-time Data     │    │   PostgreSQL         │    │   Monitoring        │
+│  Streaming Service  │    │   Database           │    │   (Prometheus)      │
+└─────────────────────┘    └──────────────────────┘    └─────────────────────┘
+                </pre>
+            </div>
+
+            <h3>Service Configuration</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-server"></i>
+                    <h4>API Server</h4>
+                    <p>RESTful API built with R Plumber</p>
+                    <ul>
+                        <li>Port: 8000</li>
+                        <li>Health Check: /health</li>
+                        <li>Documentation: /docs</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>Dashboard</h4>
+                    <p>Interactive web interface</p>
+                    <ul>
+                        <li>Port: 3000</li>
+                        <li>Real-time updates</li>
+                        <li>D3.js visualizations</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-database"></i>
+                    <h4>Database</h4>
+                    <p>PostgreSQL with Redis cache</p>
+                    <ul>
+                        <li>PostgreSQL: 5432</li>
+                        <li>Redis: 6379</li>
+                        <li>Auto-backup enabled</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-stream"></i>
+                    <h4>Streaming</h4>
+                    <p>Real-time data processing</p>
+                    <ul>
+                        <li>WebSocket: 8001</li>
+                        <li>Kafka integration</li>
+                        <li>Multi-source support</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="capabilities" class="section">
+            <h2><i class="fas fa-brain"></i> Launch Capabilities</h2>
+
+            <h3>Using the Web Platform</h3>
+            <p>Access the NEURICX platform at <a href="platform.html" class="btn btn-primary">platform.html</a> to launch capabilities through the web interface.</p>
+
+            <div class="step-list">
+                <div class="step">
+                    <h4>Economic Simulation</h4>
+                    <p>Create and run multi-agent economic simulations:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">r</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code class="language-r">library(NEURICX)
+
+# Create economy
+economy <- create_neuricx_economy(
+  n_agents = 1000,
+  symbols = c("AAPL", "MSFT", "GOOGL"),
+  network_density = 0.05
+)
+
+# Run simulation
+economy <- run_neuricx_simulation(economy, n_steps = 250)</code></pre>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Real-time Data Streaming</h4>
+                    <p>Initialize live market data streaming:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">r</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code class="language-r"># Initialize stream
+stream_config <- initialize_realtime_stream(
+  symbols = c("AAPL", "MSFT", "GOOGL", "TSLA"),
+  update_frequency = 60
+)
+
+# Start streaming
+stream_config <- start_realtime_stream(stream_config)</code></pre>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Policy Analysis</h4>
+                    <p>Run comprehensive policy intervention analysis:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">r</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code class="language-r"># Monetary policy analysis
+monetary_analysis <- analyze_monetary_policy(
+  economy, 
+  interest_rate_change = 25,
+  intervention_timing = 50,
+  duration = 25
+)</code></pre>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Crisis Prediction</h4>
+                    <p>Predict economic crises using ensemble ML models:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">r</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code class="language-r"># Crisis prediction
+crisis_prediction <- predict_economic_crisis(
+  economy,
+  prediction_horizon = 25,
+  ensemble_models = c("neural_network", "random_forest", "xgboost", "lstm")
+)</code></pre>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Quantum Optimization</h4>
+                    <p>Leverage quantum computing for advanced optimization:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">r</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code class="language-r"># Initialize quantum environment
+quantum_env <- initialize_quantum_environment(
+  backend = "simulator",
+  quantum_config = list(n_qubits = 20)
+)
+
+# Quantum portfolio optimization
+portfolio_result <- quantum_portfolio_optimization(
+  economy,
+  quantum_env,
+  risk_tolerance = 0.5
+)</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <h3>API Usage Examples</h3>
+            <p>Alternatively, use the REST API for programmatic access:</p>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash"># Create economy
+curl -X POST "http://localhost:8000/economy/create" \
+  -H "Content-Type: application/json" \
+  -d '{"n_agents": 1000, "symbols": ["AAPL", "MSFT", "GOOGL"]}'
+
+# Start simulation
+curl -X POST "http://localhost:8000/simulation/run" \
+  -H "Content-Type: application/json" \
+  -d '{"economy_id": "economy_123", "n_steps": 250}'
+
+# Get results
+curl "http://localhost:8000/simulation/simulation_456/results"</code></pre>
+            </div>
+        </section>
+
+        <section id="monitoring" class="section">
+            <h2><i class="fas fa-chart-line"></i> Monitoring & Dashboards</h2>
+
+            <h3>Access Points</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h4>Main Dashboard</h4>
+                    <p>Primary NEURICX interface</p>
+                    <a href="dashboard.html" class="btn btn-primary">Open Dashboard</a>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-area"></i>
+                    <h4>Grafana Monitoring</h4>
+                    <p>System metrics and performance</p>
+                    <a href="http://localhost:3001" class="btn btn-secondary" target="_blank">Open Grafana</a>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-fire"></i>
+                    <h4>Prometheus Metrics</h4>
+                    <p>Raw metrics and alerting</p>
+                    <a href="http://localhost:9090" class="btn btn-secondary" target="_blank">Open Prometheus</a>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-laptop-code"></i>
+                    <h4>Jupyter Lab</h4>
+                    <p>Interactive analysis environment</p>
+                    <a href="http://localhost:8888" class="btn btn-secondary" target="_blank">Open Jupyter</a>
+                </div>
+            </div>
+
+            <h3>Monitoring Setup</h3>
+            <div class="step-list">
+                <div class="step">
+                    <h4>Access Grafana</h4>
+                    <p>Login to Grafana with default credentials:</p>
+                    <ul class="requirement-list">
+                        <li>URL: http://localhost:3001</li>
+                        <li>Username: admin</li>
+                        <li>Password: admin (change on first login)</li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <h4>Configure Dashboards</h4>
+                    <p>Import pre-configured NEURICX dashboards:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">bash</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code class="language-bash"># Import dashboards
+curl -X POST "http://admin:admin@localhost:3001/api/dashboards/db" \
+  -H "Content-Type: application/json" \
+  -d @monitoring/grafana/dashboards/neuricx-overview.json</code></pre>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Set Up Alerts</h4>
+                    <p>Configure monitoring alerts for critical metrics:</p>
+                    <ul class="requirement-list">
+                        <li>High CPU/Memory usage (>80%)</li>
+                        <li>API response time degradation</li>
+                        <li>Database connection issues</li>
+                        <li>Quantum service failures</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="troubleshooting" class="section">
+            <h2><i class="fas fa-tools"></i> Troubleshooting</h2>
+
+            <h3>Common Issues</h3>
+            
+            <h4>Services Not Starting</h4>
+            <div class="alert alert-warning">
+                <strong>Problem:</strong> Docker containers fail to start
+            </div>
+            <p><strong>Solutions:</strong></p>
+            <ul class="requirement-list">
+                <li>Check Docker daemon is running: <code>docker --version</code></li>
+                <li>Verify sufficient disk space: <code>df -h</code></li>
+                <li>Check port conflicts: <code>netstat -tulpn | grep :8000</code></li>
+                <li>Review container logs: <code>docker-compose logs [service_name]</code></li>
+            </ul>
+
+            <h4>Database Connection Issues</h4>
+            <div class="alert alert-danger">
+                <strong>Problem:</strong> Cannot connect to PostgreSQL
+            </div>
+            <p><strong>Solutions:</strong></p>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash"># Check database status
+docker-compose exec postgres pg_isready
+
+# Reset database
+docker-compose down
+docker volume rm neuricx_postgres-data
+docker-compose up -d postgres</code></pre>
+            </div>
+
+            <h4>Memory Issues</h4>
+            <div class="alert alert-warning">
+                <strong>Problem:</strong> Out of memory errors during large simulations
+            </div>
+            <p><strong>Solutions:</strong></p>
+            <ul class="requirement-list">
+                <li>Reduce number of agents or simulation steps</li>
+                <li>Increase Docker memory limits</li>
+                <li>Use distributed computing for large-scale simulations</li>
+                <li>Monitor memory usage: <code>docker stats</code></li>
+            </ul>
+
+            <h3>Debugging Commands</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash"># Check all service status
+docker-compose ps
+
+# View logs for all services
+docker-compose logs
+
+# View logs for specific service
+docker-compose logs -f neuricx-api
+
+# Execute commands in container
+docker-compose exec neuricx-api bash
+
+# Check system resources
+docker system df
+
+# Clean up unused resources
+docker system prune</code></pre>
+            </div>
+
+            <h3>Performance Optimization</h3>
+            <ul class="requirement-list">
+                <li>Adjust container memory limits in docker-compose.yml</li>
+                <li>Use SSD storage for database volumes</li>
+                <li>Enable Redis caching for frequently accessed data</li>
+                <li>Configure connection pooling for database connections</li>
+                <li>Use CDN for static web assets</li>
+            </ul>
+
+            <h3>Getting Help</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-book"></i>
+                    <h4>Documentation</h4>
+                    <p>Comprehensive guides and API reference</p>
+                    <a href="#" class="btn btn-secondary">View Docs</a>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bug"></i>
+                    <h4>Issue Tracker</h4>
+                    <p>Report bugs and request features</p>
+                    <a href="#" class="btn btn-secondary">GitHub Issues</a>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-comments"></i>
+                    <h4>Community</h4>
+                    <p>Join the NEURICX community</p>
+                    <a href="#" class="btn btn-secondary">Discussions</a>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-envelope"></i>
+                    <h4>Support</h4>
+                    <p>Direct technical support</p>
+                    <a href="mailto:support@neuricx.org" class="btn btn-secondary">Contact Us</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2><i class="fas fa-rocket"></i> Ready to Launch?</h2>
+            <p>You're now ready to launch NEURICX and explore advanced economic modeling capabilities. Start with the platform interface or dive directly into the API.</p>
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="platform.html" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Launch NEURICX Platform
+                </a>
+                <a href="dashboard.html" class="btn btn-secondary">
+                    <i class="fas fa-chart-line"></i> View Dashboard
+                </a>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-block').querySelector('code');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(function() {
+                button.textContent = 'Copied!';
+                button.style.background = 'var(--success-color)';
+                button.style.color = 'var(--background-dark)';
+                
+                setTimeout(function() {
+                    button.textContent = 'Copy';
+                    button.style.background = 'transparent';
+                    button.style.color = 'var(--primary-color)';
+                }, 2000);
+            });
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

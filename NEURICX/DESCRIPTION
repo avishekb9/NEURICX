@@ -1,0 +1,41 @@
+Package: NEURICX
+Type: Package
+Title: Network-Enhanced Unified Rational Intelligence in Computational Economics
+Version: 1.0.0
+Authors@R: person("NEURICX", "Consortium", email = "neuricx@econresearch.ai", role = c("aut", "cre"))
+Description: A comprehensive framework for network-enhanced economic modeling that integrates heterogeneous agent-based systems with multi-protocol communication. NEURICX provides tractable implementations of production networks, consumption networks, and information networks with empirical validation capabilities.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
+Depends: 
+    R (>= 4.0.0)
+Imports:
+    igraph,
+    Matrix,
+    ggplot2,
+    dplyr,
+    tidyr,
+    quantmod,
+    PerformanceAnalytics,
+    forecast,
+    rugarch,
+    nnet,
+    plotly,
+    networkD3,
+    viridis,
+    DT,
+    shiny,
+    shinydashboard,
+    shinyWidgets,
+    htmlwidgets,
+    jsonlite,
+    data.table
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown,
+    devtools
+VignetteBuilder: knitr
+URL: https://github.com/neuricx-economics/NEURICX
+BugReports: https://github.com/neuricx-economics/NEURICX/issues

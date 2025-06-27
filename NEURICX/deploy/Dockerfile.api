@@ -1,0 +1,79 @@
+# NEURICX API Server Dockerfile
+FROM rocker/r-ver:4.3.0
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    libpq-dev \
+    redis-tools \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install R packages
+RUN R -e "install.packages(c( \
+    'plumber', \
+    'jsonlite', \
+    'httr', \
+    'DBI', \
+    'RPostgreSQL', \
+    'redis', \
+    'future', \
+    'promises', \
+    'ggplot2', \
+    'plotly', \
+    'shiny', \
+    'shinydashboard', \
+    'DT', \
+    'networkD3', \
+    'igraph', \
+    'Matrix', \
+    'MASS', \
+    'quantmod', \
+    'xts', \
+    'zoo', \
+    'forecast', \
+    'randomForest', \
+    'e1071', \
+    'caret', \
+    'nnet', \
+    'reshape2', \
+    'dplyr', \
+    'tidyr', \
+    'stringr', \
+    'lubridate', \
+    'magrittr' \
+), repos='https://cran.rstudio.com/')"
+
+# Install Python packages for quantum computing
+RUN pip3 install qiskit qiskit-aer qiskit-ibm-provider cirq pennylane
+
+# Create app directory
+WORKDIR /app
+
+# Copy NEURICX R package
+COPY R/ /app/R/
+COPY DESCRIPTION /app/
+COPY NAMESPACE /app/
+
+# Install NEURICX package
+RUN R -e "devtools::install_local('/app', force = TRUE)"
+
+# Copy API server files
+COPY deploy/api/ /app/api/
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/data /app/tmp
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Start API server
+CMD ["Rscript", "/app/api/server.R"]
