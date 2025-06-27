@@ -1962,7 +1962,7 @@
                         </div>
                     </div>
                     <div class="results-actions">
-                        <button class="btn btn-primary" onclick="window.open('http://localhost:3001', '_blank')">
+                        <button class="btn btn-primary" onclick="alert('Grafana dashboard would be available when running locally with the API server')">
                             <i class="fas fa-external-link-alt"></i> Open Grafana
                         </button>
                         <button class="btn btn-secondary" onclick="closeModal('monitoringModal')">
@@ -3556,8 +3556,6 @@
                 window.quantumResults = results;
                 console.log('Storing quantum results:', results); // Debug log
                 
-                // Temporary debug alert to see what data we're getting
-                alert(`Debug: Quantum API returned - Algorithm: ${results.algorithm}, Backend: ${results.backend}, Qubits: ${results.n_qubits}`);
                 
                 showStatus('quantumStatus', 'Quantum computation completed! Opening results...', 'success');
                 
