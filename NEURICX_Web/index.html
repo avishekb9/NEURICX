@@ -144,6 +144,142 @@
             width: 100%;
         }
 
+        .platform-link {
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            color: white !important;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            box-shadow: 0 3px 10px rgba(0, 212, 255, 0.3);
+            animation: platformPulse 2s ease-in-out infinite;
+        }
+
+        .platform-link:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.5);
+        }
+
+        @keyframes platformPulse {
+            0%, 100% { box-shadow: 0 3px 10px rgba(0, 212, 255, 0.3); }
+            50% { box-shadow: 0 5px 20px rgba(0, 212, 255, 0.6); }
+        }
+
+        /* Quick Access Section */
+        .quick-access {
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--background-medium), var(--background-light));
+        }
+
+        .quick-access-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .access-card {
+            background: rgba(42, 49, 66, 0.8);
+            border-radius: 15px;
+            padding: 40px 30px;
+            text-align: center;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .access-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .access-card:hover::before {
+            left: 100%;
+        }
+
+        .access-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-color);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.2);
+        }
+
+        .platform-card:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.2);
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .platform-card .card-icon {
+            background: linear-gradient(45deg, var(--accent-color), #ff8a50);
+        }
+
+        .access-card h3 {
+            font-size: 1.5rem;
+            color: var(--text-light);
+            margin-bottom: 15px;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .access-card p {
+            color: var(--text-medium);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .access-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .access-btn.primary {
+            background: linear-gradient(45deg, var(--accent-color), #ff8a50);
+            animation: platformPulse 2s ease-in-out infinite;
+        }
+
+        .access-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .access-btn.primary:hover {
+            box-shadow: 0 10px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .access-btn i {
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .access-btn:hover i {
+            transform: translateX(5px);
+        }
+
         /* Hero Section */
         .hero {
             height: 100vh;
@@ -621,11 +757,11 @@
                 </a>
                 <ul class="nav-links">
                     <li><a href="#home">Home</a></li>
+                    <li><a href="platform.html" class="platform-link"><i class="fas fa-rocket"></i> Launch Platform</a></li>
+                    <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                    <li><a href="launch-guide.html"><i class="fas fa-book"></i> Setup Guide</a></li>
                     <li><a href="#features">Features</a></li>
-                    <li><a href="#architecture">Architecture</a></li>
-                    <li><a href="#demo">Demo</a></li>
-                    <li><a href="#documentation">Docs</a></li>
-                    <li><a href="https://github.com/neuricx-economics/NEURICX" target="_blank">GitHub</a></li>
+                    <li><a href="https://github.com/avishekb9/NEURICX" target="_blank"><i class="fab fa-github"></i> GitHub</a></li>
                 </ul>
             </div>
         </div>
@@ -643,17 +779,59 @@
                     A revolutionary framework combining heterogeneous agent-based modeling with multi-layer networks and collective intelligence emergence. Built for empirical validation and real-world economic analysis.
                 </p>
                 <div class="cta-buttons">
-                    <a href="#demo" class="btn btn-primary">
+                    <a href="platform.html" class="btn btn-primary">
                         <i class="fas fa-rocket"></i>
-                        Launch Demo
+                        Launch Platform
                     </a>
-                    <a href="#documentation" class="btn btn-secondary">
+                    <a href="dashboard.html" class="btn btn-secondary">
+                        <i class="fas fa-chart-line"></i>
+                        Dashboard
+                    </a>
+                    <a href="launch-guide.html" class="btn btn-secondary">
                         <i class="fas fa-book"></i>
-                        Documentation
+                        Setup Guide
                     </a>
-                    <a href="https://github.com/neuricx-economics/NEURICX" class="btn btn-secondary" target="_blank">
+                    <a href="https://github.com/avishekb9/NEURICX" class="btn btn-secondary" target="_blank">
                         <i class="fab fa-github"></i>
                         GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Access Section -->
+    <section class="quick-access">
+        <div class="container">
+            <div class="quick-access-grid">
+                <div class="access-card platform-card">
+                    <div class="card-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3>Launch Platform</h3>
+                    <p>Start economic simulations, policy analysis, and quantum computing</p>
+                    <a href="platform.html" class="access-btn primary">
+                        Launch Now <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="access-card">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Analytics Dashboard</h3>
+                    <p>Real-time data visualization and performance monitoring</p>
+                    <a href="dashboard.html" class="access-btn">
+                        View Dashboard <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="access-card">
+                    <div class="card-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3>Setup Guide</h3>
+                    <p>Complete installation and configuration documentation</p>
+                    <a href="launch-guide.html" class="access-btn">
+                        Read Guide <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
             </div>
