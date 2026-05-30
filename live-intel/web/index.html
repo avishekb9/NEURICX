@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEURICX · Live Economic Intelligence</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@700;900&display=swap');
+:root{
+  --bg:#000;--panel:rgba(8,10,14,.85);--border:rgba(0,212,255,.18);--hot:rgba(0,255,136,.35);
+  --rule:rgba(255,255,255,.05);--text:#fff;--mid:#c9d1d9;--dim:#6b7280;
+  --cyan:#00d4ff;--green:#00ff88;--amber:#ffaa00;--red:#ff0040;--violet:#8a2be2;
+  --sans:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;--disp:'Orbitron',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.55;font-size:15px}
+body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:radial-gradient(circle at 18% 12%,rgba(0,212,255,.06)0,transparent 45%),radial-gradient(circle at 82% 88%,rgba(0,255,136,.05)0,transparent 45%)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 1.4rem}
+header.h{padding:2.6rem 0 1.4rem;text-align:center}
+header.h h1{font-family:var(--disp);font-size:clamp(1.8rem,4.5vw,3rem);font-weight:900;letter-spacing:2px;
+  background:linear-gradient(120deg,var(--cyan),var(--green));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+header.h .sub{font-family:var(--mono);font-size:.82rem;color:var(--cyan);text-transform:uppercase;letter-spacing:3px;margin:.8rem 0}
+header.h .lede{max-width:680px;margin:0 auto;color:var(--mid)}
+.controls{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;align-items:center;margin:1.4rem 0 .6rem}
+.controls input,.controls select{font-family:var(--mono);font-size:.85rem;background:var(--panel);color:var(--text);
+  border:1px solid var(--border);border-radius:8px;padding:.5rem .8rem}
+.controls input{min-width:340px;max-width:90vw}
+.controls button{font-family:var(--mono);font-size:.82rem;text-transform:uppercase;letter-spacing:1px;cursor:pointer;
+  background:rgba(0,212,255,.1);color:var(--cyan);border:1px solid var(--hot);border-radius:8px;padding:.5rem 1.1rem;transition:.2s}
+.controls button:hover{background:rgba(0,255,136,.15)}
+.stamp{text-align:center;font-family:var(--mono);font-size:.76rem;color:var(--dim);margin-bottom:1.4rem}
+section{padding:1.6rem 0;border-top:1px solid var(--rule)}
+.sec-label{font-family:var(--mono);font-size:.74rem;color:var(--dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:.3rem}
+.sec-title{font-size:1.35rem;font-weight:600;margin-bottom:1.1rem}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem}
+.kpi{background:var(--panel);border:1px solid var(--hot);border-radius:10px;padding:1.1rem 1rem;text-align:center}
+.kpi .big{font-family:var(--disp);font-size:1.8rem;font-weight:700;color:var(--green)}
+.kpi .cap{font-size:.76rem;color:var(--dim);margin-top:.35rem}
+.chgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.9rem}
+.ch{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--cyan);border-radius:10px;padding:1rem 1.1rem}
+.ch h3{font-family:var(--mono);font-size:.82rem;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem}
+.ch .row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.82rem;color:var(--mid);margin:.2rem 0}
+.ch .row .v{color:var(--cyan)}
+.bartrack{height:7px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;margin-top:.5rem}
+.barfill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.feed{display:flex;flex-direction:column;gap:.6rem}
+.art{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:.8rem 1rem;display:grid;grid-template-columns:1fr auto;gap:.5rem 1rem;align-items:start}
+.art a{color:var(--text);text-decoration:none;font-weight:500}
+.art a:hover{color:var(--cyan)}
+.art .meta{font-family:var(--mono);font-size:.72rem;color:var(--dim);margin-top:.3rem}
+.tags{display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;white-space:nowrap}
+.chip{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.5px;padding:.1rem .5rem;border-radius:5px;border:1px solid var(--border);color:var(--mid)}
+.chip.Trade{border-color:#1f77b4;color:#7fb4e6}
+.chip.Financial{border-color:#d62728;color:#f08a8a}
+.chip.Geopolitical{border-color:#2ca02c;color:#7fd07f}
+.chip.Behavioural{border-color:#9467bd;color:#c0a0e0}
+.chip-Monetary{border-color:#ff7f0e;color:#ffb877}
+.sent{font-family:var(--mono);font-size:.66rem;padding:.1rem .45rem;border-radius:5px}
+.sent.risk-off{color:var(--red);border:1px solid rgba(255,0,64,.4)}
+.sent.risk-on{color:var(--green);border:1px solid var(--hot)}
+.sent.neutral{color:var(--dim);border:1px solid var(--rule)}
+.rel{font-family:var(--mono);font-size:.7rem;color:var(--cyan)}
+.warn{background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.3);border-radius:8px;padding:.7rem 1rem;font-family:var(--mono);font-size:.78rem;color:var(--amber);margin-bottom:1rem}
+.msg{text-align:center;color:var(--dim);font-family:var(--mono);padding:2rem}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:s .7s linear infinite;vertical-align:middle;margin-right:.5rem}
+@keyframes s{to{transform:rotate(360deg)}}
+footer{border-top:1px solid var(--rule);padding:2rem 0 3rem;font-family:var(--mono);font-size:.78rem;color:var(--dim);text-align:center}
+footer a{color:var(--cyan);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="h">
+    <h1>NEURICX</h1>
+    <div class="sub">Network-Enhanced Real-time Intelligence · Live Economic News</div>
+    <p class="lede">Real-time econ/financial/geo news ingested from GDELT, classified into contagion channels by Gemini, ranked by systemic relevance.</p>
+    <div class="controls">
+      <input id="q" type="text" value="economy OR financial OR trade OR tariff OR inflation OR central bank OR recession" />
+      <select id="days"><option value="1">24h</option><option value="3" selected>3 days</option><option value="7">7 days</option></select>
+      <select id="n"><option value="15">15</option><option value="25" selected>25</option><option value="40">40</option></select>
+      <button id="run">Run Intel ↻</button>
+    </div>
+    <div class="stamp" id="stamp">idle</div>
+  </header>
+  <div id="content"><div class="msg">Press <b>Run Intel</b> to pull live economic news.</div></div>
+  <footer>
+    NEURICX live-intel v0.1 · GDELT + Gemini · part of the <a href="../research-engine.html">Research Engine</a> · SHSSM IIT Bhubaneswar
+  </footer>
+</div>
+<script>
+const CHANNELS=["Trade","Financial","Geopolitical","Behavioural","Monetary Policy"];
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+const chipClass=ch=>ch==="Monetary Policy"?"chip chip-Monetary":"chip "+ch;
+
+async function run(){
+  const q=document.getElementById('q').value.trim();
+  const days=document.getElementById('days').value;
+  const n=document.getElementById('n').value;
+  document.getElementById('stamp').innerHTML='<span class="spin"></span>pulling GDELT + classifying via Gemini…';
+  document.getElementById('content').innerHTML='';
+  try{
+    const r=await fetch(`/api/neuricx/intel?q=${encodeURIComponent(q)}&days=${days}&n=${n}`);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    render(d);
+  }catch(e){
+    document.getElementById('content').innerHTML=`<div class="msg" style="color:var(--red)">Failed: ${esc(e.message)}</div>`;
+    document.getElementById('stamp').textContent='error';
+  }
+}
+
+function render(d){
+  document.getElementById('stamp').innerHTML=
+    `${d.article_count} articles · ${esc(d.sources.news)} → ${esc(d.sources.classifier)}${d.stale?' · <span style="color:var(--amber)">STALE (last good pull)</span>':d.cached?' · cached':''} · ${esc(d.generated_at_utc)}`;
+  const s=d.summary;
+  const warns=(d.warnings||[]).length?`<div class="warn">⚠ ${d.warnings.map(esc).join('<br>⚠ ')}</div>`:'';
+  // KPI strip
+  const stressPct=Math.round(s.stress_index*100);
+  const kpis=[
+    [d.article_count,'articles'],
+    [(s.mean_relevance).toFixed(2),'mean relevance'],
+    [stressPct+'%','risk-off stress index'],
+    [topChannel(s.by_channel),'dominant channel'],
+  ].map(([b,c])=>`<div class="kpi"><div class="big">${esc(b)}</div><div class="cap">${esc(c)}</div></div>`).join('');
+  // channel cards
+  const maxCount=Math.max(1,...CHANNELS.map(ch=>s.by_channel[ch].count));
+  const chs=CHANNELS.map(ch=>{
+    const b=s.by_channel[ch];
+    return `<div class="ch"><h3>${esc(ch)}</h3>
+      <div class="row"><span>articles</span><span class="v">${b.count}</span></div>
+      <div class="row"><span>mean relevance</span><span class="v">${b.mean_relevance.toFixed(2)}</span></div>
+      <div class="row"><span>risk-off</span><span class="v">${b.risk_off}</span></div>
+      <div class="bartrack"><div class="barfill" style="width:${(b.count/maxCount*100).toFixed(0)}%"></div></div></div>`;
+  }).join('');
+  // feed
+  const feed=d.articles.map(a=>`<div class="art">
+    <div><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.title||'(untitled)')}</a>
+      <div class="meta">${esc(a.domain||'')} · ${esc(a.source_country||'?')} · ${esc(a.location||'Global')}${a.lat!=null?` (${a.lat.toFixed(1)},${a.lon.toFixed(1)})`:''}</div></div>
+    <div class="tags">
+      <span class="${chipClass(a.channel)}">${esc(a.channel)}</span>
+      <span class="sent ${esc(a.sentiment)}">${esc(a.sentiment)}</span>
+      <span class="rel">rel ${a.relevance.toFixed(2)}</span>
+    </div></div>`).join('');
+  document.getElementById('content').innerHTML=warns+
+    `<section><div class="sec-label">§1</div><h2 class="sec-title">Live Indicators</h2><div class="strip">${kpis}</div></section>`+
+    `<section><div class="sec-label">§2</div><h2 class="sec-title">Contagion Channels (this window)</h2><div class="chgrid">${chs}</div></section>`+
+    `<section><div class="sec-label">§3</div><h2 class="sec-title">Ranked Feed (by systemic relevance)</h2><div class="feed">${feed}</div></section>`;
+}
+
+function topChannel(byCh){
+  let best="—",n=-1;
+  for(const ch of CHANNELS){ if(byCh[ch].count>n){n=byCh[ch].count;best=ch;} }
+  return best;
+}
+document.getElementById('run').addEventListener('click',run);
+</script>
+</body>
+</html>
