@@ -66,6 +66,31 @@ function httpsGetJson(url, { timeoutMs = 25_000 } = {}) {
   });
 }
 
+// ── geocoding (Google Maps Geocoding API — real coords, replaces Gemini guess) ─
+// The GOOGLE_API_KEY's restrictions were extended to geocoding-backend on
+// 2026-05-30, so the same key now authorizes Geocoding. Results are cached per
+// location string (location names repeat heavily across a news pull, and the
+// cache persists for the process lifetime to keep Maps calls minimal).
+const geocodeCache = new Map(); // "Mumbai" -> {lat,lon} | null
+async function geocode(place) {
+  if (!place || place === "Global") return null;
+  if (geocodeCache.has(place)) return geocodeCache.get(place);
+  if (!API_KEY) return null;
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(place)}&key=${API_KEY}`;
+    const data = await httpsGetJson(url, { timeoutMs: 12_000 });
+    let result = null;
+    if (data.status === "OK" && data.results?.[0]?.geometry?.location) {
+      const loc = data.results[0].geometry.location;
+      result = { lat: loc.lat, lon: loc.lng };
+    }
+    geocodeCache.set(place, result); // cache misses too (incl. null) to avoid re-querying
+    return result;
+  } catch {
+    return null; // never let a geocode failure break the pipeline
+  }
+}
+
 function httpsPostJson(url, payload, { timeoutMs = 40_000 } = {}) {
   return new Promise((resolve, reject) => {
     const data = Buffer.from(JSON.stringify(payload));
@@ -253,18 +278,33 @@ async function runPipeline(query, opts) {
       warnings.push(`Gemini classification failed (showing unclassified): ${e.message}`);
     }
   }
+  // Replace Gemini-estimated coords with real Geocoding API coords where possible.
+  // De-dup locations first so we make at most one Maps call per distinct place.
+  let geotag = "Gemini-estimated (Maps geocoding unavailable)";
+  if (API_KEY && classified.length) {
+    const places = [...new Set(classified.map(a => a.location).filter(p => p && p !== "Global"))];
+    const coords = {};
+    for (const p of places) coords[p] = await geocode(p); // geocodeCache makes repeats free
+    let real = 0;
+    classified = classified.map(a => {
+      const g = coords[a.location];
+      if (g) { real++; return { ...a, lat: g.lat, lon: g.lon, geocoded: true }; }
+      return { ...a, geocoded: false };
+    });
+    if (real > 0) geotag = `Google Geocoding API (${real}/${classified.length} located) + Gemini fallback`;
+  }
   // sort by relevance desc so the dashboard leads with what matters
   classified.sort((a, b) => b.relevance - a.relevance);
   const payload = {
     engine: "NEURICX",
-    version: "0.1.0",
+    version: "0.2.0",
     generated_at_utc: new Date().toISOString(),
     query,
     options: opts,
     article_count: classified.length,
     summary: summarize(classified),
     articles: classified,
-    sources: { news: "GDELT DOC 2.0 (keyless)", classifier: `Gemini ${GEMINI_MODEL}`, geotag: "Gemini (Maps key not yet provisioned)" },
+    sources: { news: "GDELT DOC 2.0 (keyless)", classifier: `Gemini ${GEMINI_MODEL}`, geotag },
     warnings,
     cached: false,
   };

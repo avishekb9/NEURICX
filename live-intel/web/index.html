@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NEURICX · Live Economic Intelligence</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@700;900&display=swap');
 :root{
@@ -67,6 +69,12 @@ section{padding:1.6rem 0;border-top:1px solid var(--rule)}
 @keyframes s{to{transform:rotate(360deg)}}
 footer{border-top:1px solid var(--rule);padding:2rem 0 3rem;font-family:var(--mono);font-size:.78rem;color:var(--dim);text-align:center}
 footer a{color:var(--cyan);text-decoration:none}
+#map{height:460px;border:1px solid var(--border);border-radius:10px;background:#04060b}
+.leaflet-container{background:#04060b;font-family:var(--mono)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#0a0e16;color:var(--mid);border:1px solid var(--border)}
+.leaflet-popup-content{font-family:var(--mono);font-size:.78rem}
+.leaflet-popup-content a{color:var(--cyan)}
+.map-note{font-family:var(--mono);font-size:.72rem;color:var(--dim);margin-top:.5rem}
 </style>
 </head>
 <body>
@@ -142,10 +150,38 @@ function render(d){
       <span class="sent ${esc(a.sentiment)}">${esc(a.sentiment)}</span>
       <span class="rel">rel ${a.relevance.toFixed(2)}</span>
     </div></div>`).join('');
+  const located=d.articles.filter(a=>a.lat!=null&&a.lon!=null).length;
+  const geoNote=`${located}/${d.article_count} geo-located · ${esc(d.sources.geotag||'')}`;
   document.getElementById('content').innerHTML=warns+
     `<section><div class="sec-label">§1</div><h2 class="sec-title">Live Indicators</h2><div class="strip">${kpis}</div></section>`+
     `<section><div class="sec-label">§2</div><h2 class="sec-title">Contagion Channels (this window)</h2><div class="chgrid">${chs}</div></section>`+
-    `<section><div class="sec-label">§3</div><h2 class="sec-title">Ranked Feed (by systemic relevance)</h2><div class="feed">${feed}</div></section>`;
+    `<section><div class="sec-label">§3</div><h2 class="sec-title">Geo Map — where the news is</h2><div id="map"></div><div class="map-note">${geoNote}</div></section>`+
+    `<section><div class="sec-label">§4</div><h2 class="sec-title">Ranked Feed (by systemic relevance)</h2><div class="feed">${feed}</div></section>`;
+  renderMap(d.articles);
+}
+
+let _map=null;
+const CHANNEL_COLOR={Trade:"#1f77b4",Financial:"#d62728",Geopolitical:"#2ca02c",Behavioural:"#9467bd","Monetary Policy":"#ff7f0e"};
+function renderMap(articles){
+  const el=document.getElementById('map');
+  if(!el||typeof L==='undefined')return;
+  if(_map){_map.remove();_map=null;}
+  _map=L.map('map',{worldCopyJump:true}).setView([20,10],2);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    attribution:'© OpenStreetMap © CARTO', subdomains:'abcd', maxZoom:19
+  }).addTo(_map);
+  const located=articles.filter(a=>a.lat!=null&&a.lon!=null);
+  located.forEach(a=>{
+    const col=CHANNEL_COLOR[a.channel]||'#00d4ff';
+    const r=4+Math.round((a.relevance||0)*8);
+    L.circleMarker([a.lat,a.lon],{radius:r,color:col,weight:1.5,fillColor:col,fillOpacity:0.45})
+      .addTo(_map)
+      .bindPopup(`<b>${esc(a.channel)}</b> · ${esc(a.sentiment)} · rel ${(a.relevance||0).toFixed(2)}<br>`+
+        `${esc(a.location||'')}<br><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc((a.title||'').slice(0,90))}</a>`);
+  });
+  if(located.length){
+    try{_map.fitBounds(L.featureGroup(located.map(a=>L.marker([a.lat,a.lon]))).getBounds().pad(0.2));}catch(e){}
+  }
 }
 
 function topChannel(byCh){
