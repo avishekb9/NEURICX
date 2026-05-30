@@ -329,6 +329,118 @@ async function runPipeline(query, opts) {
   return payload;
 }
 
+// ── combined view: NEURICX news ⊕ Growth OS social ────────────────────────────
+// Growth OS lives in the VERALABS proxy (default http://127.0.0.1:3001, override
+// with GROWTH_BASE). We fetch it server-side (no CORS) and fuse it with our news
+// pipeline. The novel value is the CROSSOVER: overlay the operator's audience
+// geography against where today's economic news is actually happening.
+const GROWTH_BASE = process.env.GROWTH_BASE || "http://127.0.0.1:3001";
+
+function httpGetJson(url, { timeoutMs = 25_000 } = {}) {
+  return new Promise(async (resolve, reject) => {
+    const { request } = await import("node:http");
+    const req = request(url, { method: "GET" }, res => {
+      let body = "";
+      res.on("data", c => (body += c));
+      res.on("end", () => {
+        if (res.statusCode < 200 || res.statusCode >= 300) return reject(new Error(`HTTP ${res.statusCode}`));
+        try { resolve(JSON.parse(body)); } catch (e) { reject(new Error(`bad JSON: ${e.message}`)); }
+      });
+    });
+    req.on("error", reject);
+    req.setTimeout(timeoutMs, () => req.destroy(new Error("timeout")));
+    req.end();
+  });
+}
+
+// Defensive extractor — Growth OS demographic objects are sometimes {value:{...}}
+// and sometimes {value:{value:{...}}}; unwrap to the leaf count-map either way.
+function leafMap(node) {
+  let v = node?.value;
+  if (v && typeof v === "object" && v.value && typeof v.value === "object") v = v.value;
+  return (v && typeof v === "object") ? v : {};
+}
+const topN = (obj, n) => Object.entries(obj || {}).map(([k, v]) => [k, Number(v) || 0])
+  .sort((a, b) => b[1] - a[1]).slice(0, n);
+
+async function buildCombined(query, opts) {
+  const warnings = [];
+  // News (own pipeline; reuses cache + geocoding + stale fallback)
+  let news = null;
+  try { news = await runPipeline(query, opts); }
+  catch (e) { warnings.push(`NEURICX pipeline failed: ${e.message}`); }
+
+  // Social (Growth OS dashboard via the proxy)
+  let social = null;
+  try {
+    const g = await httpGetJson(`${GROWTH_BASE}/api/growth/dashboard`);
+    const m = g?.account?.metrics || {};
+    const dem = g?.audience?.demographics || {};
+    social = {
+      ig_id: g?.account?.ig_id || null,
+      period_days: g?.account?.days ?? null,
+      metrics: {
+        reach: m.reach?.value ?? null,
+        accounts_engaged: m.accounts_engaged?.value ?? null,
+        total_interactions: m.total_interactions?.value ?? null,
+        profile_views: m.profile_views?.value ?? null,
+        website_clicks: m.website_clicks?.value ?? null,
+      },
+      audience: {
+        country: leafMap(dem.country),
+        city: leafMap(dem.city),
+        gender: leafMap(dem.gender),
+        age: leafMap(dem.age),
+      },
+      token: { valid: g?.token?.valid ?? null, data_access_expires_at: g?.token?.data_access_expires_at ?? null, scopes_count: (g?.token?.scopes || []).length },
+      generated_at: g?.generated_at || null,
+    };
+  } catch (e) {
+    warnings.push(`Growth OS unreachable (${GROWTH_BASE}): ${e.message}`);
+  }
+
+  // Crossover: audience geography × news geography. Anchored on AUDIENCE (the
+  // stable side) so it still renders when a news pull is empty/throttled —
+  // news_count simply becomes 0, which is itself the "white space" signal.
+  let crossover = null;
+  const audienceCountry = social ? topN(social.audience.country, 8) : [];
+  if (audienceCountry.length) {
+    const newsByCountry = {};
+    const newsChannelByCountry = {};
+    for (const a of (news?.articles || [])) {
+      const c = a.source_country || "Unknown";
+      newsByCountry[c] = (newsByCountry[c] || 0) + 1;
+      (newsChannelByCountry[c] ||= {})[a.channel] = (newsChannelByCountry[c]?.[a.channel] || 0) + 1;
+    }
+    const audTotal = audienceCountry.reduce((s, [, v]) => s + v, 0) || 1;
+    // Map common audience country CODES → GDELT full names for overlap.
+    const CODE2NAME = { IN: "India", US: "United States", GB: "United Kingdom", BR: "Brazil", AE: "United Arab Emirates", CA: "Canada", AU: "Australia", DE: "Germany", FR: "France", SG: "Singapore", PK: "Pakistan", BD: "Bangladesh", NP: "Nepal", ID: "Indonesia", ZA: "South Africa", NG: "Nigeria", JP: "Japan", CN: "China" };
+    const overlap = audienceCountry.map(([code, count]) => {
+      const name = CODE2NAME[code] || code;
+      const newsCount = newsByCountry[name] || 0;
+      const chans = newsChannelByCountry[name] || {};
+      const domChannel = Object.entries(chans).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+      return { country_code: code, country_name: name, audience_share: Math.round(count / audTotal * 1000) / 10, audience_count: count, news_count: newsCount, dominant_channel: domChannel };
+    });
+    crossover = {
+      news_by_country: topN(newsByCountry, 10).map(([k, v]) => ({ country: k, count: v })),
+      audience_overlap: overlap,
+      note: "audience_share is % of top-8 audience countries; news_count = today's economic stories sourced from that country.",
+    };
+  }
+
+  return {
+    engine: "NEURICX+GrowthOS",
+    version: "0.1.0",
+    generated_at_utc: new Date().toISOString(),
+    query, options: opts,
+    news: news ? { summary: news.summary, article_count: news.article_count, sources: news.sources, stale: !!news.stale, articles: news.articles } : null,
+    social,
+    crossover,
+    warnings,
+  };
+}
+
 // ── HTTP server ───────────────────────────────────────────────────────────────
 const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json" };
 
@@ -351,6 +463,21 @@ const server = createServer(async (req, res) => {
     try {
       const payload = await runPipeline(query, opts);
       return send(200, "application/json", JSON.stringify(payload));
+    } catch (e) {
+      return send(500, "application/json", JSON.stringify({ error: e.message }));
+    }
+  }
+
+  // combined view: NEURICX news ⊕ Growth OS social (server-to-server, no CORS).
+  // Growth OS degrades to null when unreachable (e.g. on Cloud Run, no :3001).
+  if (u.pathname === "/api/combined") {
+    const query = u.searchParams.get("q") || "(economy OR financial OR trade OR tariff OR inflation OR central bank)";
+    const opts = {
+      maxRecords: Math.min(50, Math.max(5, parseInt(u.searchParams.get("n") || "20", 10))),
+      timespanDays: Math.min(14, Math.max(1, parseInt(u.searchParams.get("days") || "3", 10))),
+    };
+    try {
+      return send(200, "application/json", JSON.stringify(await buildCombined(query, opts)));
     } catch (e) {
       return send(500, "application/json", JSON.stringify({ error: e.message }));
     }
