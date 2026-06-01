@@ -75,6 +75,20 @@ footer a{color:var(--cyan);text-decoration:none}
 .leaflet-popup-content{font-family:var(--mono);font-size:.78rem}
 .leaflet-popup-content a{color:var(--cyan)}
 .map-note{font-family:var(--mono);font-size:.72rem;color:var(--dim);margin-top:.5rem}
+/* ── history analytics panel (BigQuery-backed) ── */
+#hist-sec .hhead{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+#hist-sec .htoggle{font-family:var(--mono);font-size:.78rem;color:var(--cyan);border:1px solid var(--border);border-radius:7px;padding:.3rem .8rem;background:rgba(0,212,255,.06)}
+#hist-body{margin-top:1.1rem}
+#hist-body.collapsed{display:none}
+.chart-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:1rem 1.1rem;margin-bottom:1rem}
+.chart-card h3{font-family:var(--mono);font-size:.8rem;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:.2rem}
+.chart-card .note{font-family:var(--mono);font-size:.72rem;color:var(--dim);margin-bottom:.7rem}
+.chart-card svg{width:100%;height:auto;display:block;overflow:visible}
+.chart-card svg text{font-family:var(--mono);font-size:9px;fill:var(--dim)}
+.chart-axis{stroke:rgba(255,255,255,.12);stroke-width:1}
+.chart-thresh{stroke:var(--amber);stroke-width:1;stroke-dasharray:4 3}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem 1rem;margin-top:.6rem;font-family:var(--mono);font-size:.72rem;color:var(--mid)}
+.legend i{display:inline-block;width:10px;height:3px;vertical-align:middle;margin-right:.35rem}
 </style>
 </head>
 <body>
@@ -92,6 +106,20 @@ footer a{color:var(--cyan);text-decoration:none}
     <div class="stamp" id="stamp">idle</div>
   </header>
   <div id="content"><div class="msg">Press <b>Run Intel</b> to pull live economic news.</div></div>
+
+  <section id="hist-sec">
+    <div class="hhead" id="hist-head">
+      <div>
+        <div class="sec-label">Longitudinal Warehouse · BigQuery</div>
+        <div class="sec-title">Channel Intelligence — History</div>
+      </div>
+      <span class="htoggle" id="hist-toggle">▾ show</span>
+    </div>
+    <div id="hist-body" class="collapsed">
+      <div class="msg" id="hist-msg"><span class="spin"></span>loading warehoused history…</div>
+    </div>
+  </section>
+
   <footer>
     NEURICX live-intel v0.1 · GDELT + Gemini · part of the <a href="https://avishekb9.github.io/econstellar/research-engine.html" target="_blank" rel="noopener">Research Engine</a> · SHSSM IIT Bhubaneswar
   </footer>
@@ -190,6 +218,102 @@ function topChannel(byCh){
   return best;
 }
 document.getElementById('run').addEventListener('click',run);
+
+/* ───────── history analytics panel (BigQuery /api/neuricx/history) ───────── */
+const CH_COLOR={Trade:"#7fb4e6",Financial:"#f08a8a",Geopolitical:"#7fd07f",Behavioural:"#c0a0e0","Monetary Policy":"#ffb877"};
+const SVGNS="http://www.w3.org/2000/svg";
+const svgEl=(t,a)=>{const e=document.createElementNS(SVGNS,t);for(const k in a)e.setAttribute(k,a[k]);return e;};
+
+// rows: [{bucket, channel, n, mean_rel, risk_off}] — values are strings from BQ REST.
+// Bucket the rows into a sorted list of timestamps × channel.
+function shapeHistory(rows){
+  const buckets=[...new Set(rows.map(r=>r.bucket))].sort((a,b)=>(+a)-(+b)); // unix seconds asc
+  const byKey={}; rows.forEach(r=>{ byKey[r.bucket+"|"+r.channel]=r; });
+  return {buckets, byKey};
+}
+function xAt(i,n,W,padL,padR){ return n<=1?padL:(padL+(W-padL-padR)*i/(n-1)); }
+function fmtTick(sec){ const d=new Date(sec*1000); return (d.getMonth()+1)+"/"+d.getDate(); }
+
+// Chart 1: channel stress over time = mean_rel × risk_off-share proxy, one line per channel.
+function chartChannelStress(rows){
+  const W=820,H=240,padL=38,padR=10,padT=14,padB=24;
+  const {buckets,byKey}=shapeHistory(rows);
+  const svg=svgEl("svg",{viewBox:`0 0 ${W} ${H}`});
+  // y axis 0..1 (mean relevance)
+  svg.appendChild(svgEl("line",{class:"chart-axis",x1:padL,y1:H-padB,x2:W-padR,y2:H-padB}));
+  svg.appendChild(svgEl("line",{class:"chart-axis",x1:padL,y1:padT,x2:padL,y2:H-padB}));
+  [0,0.5,1].forEach(v=>{const y=padT+(H-padT-padB)*(1-v);const t=svgEl("text",{x:padL-5,y:y+3,"text-anchor":"end"});t.textContent=v.toFixed(1);svg.appendChild(t);});
+  buckets.forEach((b,i)=>{ if(buckets.length<=8||i%Math.ceil(buckets.length/8)===0){const t=svgEl("text",{x:xAt(i,buckets.length,W,padL,padR),y:H-padB+12,"text-anchor":"middle"});t.textContent=fmtTick(+b);svg.appendChild(t);} });
+  CHANNELS.forEach(ch=>{
+    const pts=buckets.map((b,i)=>{const r=byKey[b+"|"+ch];const v=r?Math.max(0,Math.min(1,+r.mean_rel)):0;return [xAt(i,buckets.length,W,padL,padR),padT+(H-padT-padB)*(1-v)];}).filter(Boolean);
+    if(pts.length){svg.appendChild(svgEl("polyline",{fill:"none",stroke:CH_COLOR[ch],"stroke-width":1.8,points:pts.map(p=>p.join(",")).join(" ")}));}
+  });
+  return svg;
+}
+// Chart 2: net sentiment over time — Σ(risk_off) negative pull vs n total, area fill above/below 0.
+function chartSentiment(rows){
+  const W=820,H=200,padL=38,padR=10,padT=14,padB=24;
+  const {buckets,byKey}=shapeHistory(rows);
+  const net=buckets.map(b=>{let n=0,ro=0;CHANNELS.forEach(ch=>{const r=byKey[b+"|"+ch];if(r){n+=(+r.n)||0;ro+=(+r.risk_off)||0;}});return n>0?1-2*(ro/n):0;}); // +1 all risk-on, -1 all risk-off
+  const svg=svgEl("svg",{viewBox:`0 0 ${W} ${H}`});
+  const y0=padT+(H-padT-padB)*0.5;
+  svg.appendChild(svgEl("line",{class:"chart-axis",x1:padL,y1:y0,x2:W-padR,y2:y0}));
+  [["+1",padT],["0",y0],["-1",H-padB]].forEach(([lab,y])=>{const t=svgEl("text",{x:padL-5,y:y+3,"text-anchor":"end"});t.textContent=lab;svg.appendChild(t);});
+  const xy=net.map((v,i)=>[xAt(i,buckets.length,W,padL,padR),y0-(H-padT-padB)*0.5*Math.max(-1,Math.min(1,v))]);
+  if(xy.length){
+    const area=`${padL},${y0} `+xy.map(p=>p.join(",")).join(" ")+` ${xy[xy.length-1][0]},${y0}`;
+    svg.appendChild(svgEl("polygon",{points:area,fill:"rgba(0,255,136,.12)"}));
+    svg.appendChild(svgEl("polyline",{fill:"none",stroke:"#00ff88","stroke-width":1.8,points:xy.map(p=>p.join(",")).join(" ")}));
+  }
+  buckets.forEach((b,i)=>{ if(buckets.length<=8||i%Math.ceil(buckets.length/8)===0){const t=svgEl("text",{x:xAt(i,buckets.length,W,padL,padR),y:H-padB+12,"text-anchor":"middle"});t.textContent=fmtTick(+b);svg.appendChild(t);} });
+  return svg;
+}
+// Chart 3: stress-index timeline — bars = risk-off share across all channels, threshold line at 0.6.
+function chartStress(rows){
+  const W=820,H=200,padL=38,padR=10,padT=14,padB=24;
+  const {buckets,byKey}=shapeHistory(rows);
+  const stress=buckets.map(b=>{let n=0,ro=0;CHANNELS.forEach(ch=>{const r=byKey[b+"|"+ch];if(r){n+=(+r.n)||0;ro+=(+r.risk_off)||0;}});return n>0?ro/n:0;});
+  const svg=svgEl("svg",{viewBox:`0 0 ${W} ${H}`});
+  svg.appendChild(svgEl("line",{class:"chart-axis",x1:padL,y1:H-padB,x2:W-padR,y2:H-padB}));
+  [0,0.6,1].forEach(v=>{const y=padT+(H-padT-padB)*(1-v);const t=svgEl("text",{x:padL-5,y:y+3,"text-anchor":"end"});t.textContent=v.toFixed(1);svg.appendChild(t);});
+  const ythr=padT+(H-padT-padB)*(1-0.6);
+  svg.appendChild(svgEl("line",{class:"chart-thresh",x1:padL,y1:ythr,x2:W-padR,y2:ythr}));
+  const bw=Math.max(2,(W-padL-padR)/Math.max(1,buckets.length)-3);
+  stress.forEach((v,i)=>{const x=xAt(i,buckets.length,W,padL,padR);const h=(H-padT-padB)*v;const col=v>0.6?"#ff0040":v>0.4?"#ffaa00":"#00d4ff";svg.appendChild(svgEl("rect",{x:x-bw/2,y:(H-padB)-h,width:bw,height:h,fill:col,opacity:.8}));});
+  buckets.forEach((b,i)=>{ if(buckets.length<=8||i%Math.ceil(buckets.length/8)===0){const t=svgEl("text",{x:xAt(i,buckets.length,W,padL,padR),y:H-padB+12,"text-anchor":"middle"});t.textContent=fmtTick(+b);svg.appendChild(t);} });
+  return svg;
+}
+function channelLegend(){
+  const d=document.createElement("div");d.className="legend";
+  CHANNELS.forEach(ch=>{const s=document.createElement("span");s.innerHTML=`<i style="background:${CH_COLOR[ch]}"></i>${esc(ch)}`;d.appendChild(s);});
+  return d;
+}
+function renderHistory(d){
+  const body=document.getElementById('hist-body');
+  const rows=(d&&d.rows)||[];
+  if(d&&d.error){ body.innerHTML=`<div class="warn">History unavailable: ${esc(d.error)}</div>`; return; }
+  if(!rows.length){ body.innerHTML=`<div class="msg">No warehoused history yet — the warehouse fills as live pulls succeed. (dataset <b>${esc((d&&d.dataset)||'neuricx')}</b>, last ${esc((d&&d.days)||30)}d)</div>`; return; }
+  body.innerHTML="";
+  const mk=(title,note,svg,legend)=>{const c=document.createElement("div");c.className="chart-card";c.innerHTML=`<h3>${title}</h3><div class="note">${note}</div>`;c.appendChild(svg);if(legend)c.appendChild(legend);body.appendChild(c);};
+  mk("Channel mean-relevance over time","Per-channel systemic relevance (0–1), one line per contagion channel.",chartChannelStress(rows),channelLegend());
+  mk("Net sentiment trend","+1 fully risk-on · −1 fully risk-off, aggregated across channels.",chartSentiment(rows));
+  mk("Systemic stress index","Risk-off share of classified news; amber>0.4, red>0.6 (dashed threshold).",chartStress(rows));
+}
+async function loadHistory(){
+  const body=document.getElementById('hist-body');
+  try{
+    const r=await fetch('/api/neuricx/history?days=30');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    renderHistory(await r.json());
+  }catch(e){ body.innerHTML=`<div class="warn">History fetch failed: ${esc(e.message)}</div>`; }
+}
+let _histLoaded=false;
+document.getElementById('hist-head').addEventListener('click',()=>{
+  const body=document.getElementById('hist-body'),tog=document.getElementById('hist-toggle');
+  const open=body.classList.toggle('collapsed')===false;
+  tog.textContent=open?'▴ hide':'▾ show';
+  if(open&&!_histLoaded){_histLoaded=true;loadHistory();}
+});
 </script>
 </body>
 </html>
