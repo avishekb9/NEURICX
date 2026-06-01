@@ -26,6 +26,7 @@ import { request as httpsRequest } from "node:https";
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join, extname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { persistRun, channelHistory } from "./bq.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const WEB_DIR = join(__dirname, "..", "web");
@@ -312,6 +313,8 @@ async function runPipeline(query, opts) {
   // transient GDELT rate-limit or outage doesn't pin the dashboard to zero.
   if (classified.length > 0 && warnings.length === 0) {
     cacheSet(key, payload);
+    // Warehouse the good pull to BigQuery (fire-and-forget; never blocks/raises).
+    persistRun(payload).catch(() => {});
     return payload;
   }
   // Bad/empty fetch (e.g. GDELT 429): serve the last good pull for this query
@@ -463,6 +466,17 @@ const server = createServer(async (req, res) => {
     try {
       const payload = await runPipeline(query, opts);
       return send(200, "application/json", JSON.stringify(payload));
+    } catch (e) {
+      return send(500, "application/json", JSON.stringify({ error: e.message }));
+    }
+  }
+
+  // historical channel-intensity time series from the BigQuery warehouse
+  if (u.pathname === "/api/neuricx/history") {
+    const days = Math.min(365, Math.max(1, parseInt(u.searchParams.get("days") || "30", 10)));
+    const query = u.searchParams.get("q") || null;
+    try {
+      return send(200, "application/json", JSON.stringify(await channelHistory({ days, query })));
     } catch (e) {
       return send(500, "application/json", JSON.stringify({ error: e.message }));
     }
